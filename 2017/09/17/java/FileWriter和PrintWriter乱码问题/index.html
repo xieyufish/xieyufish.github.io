@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="java io之FileWriter  PrintWriter类的问题场景描述： tomcat下，利用fusioncharts实现公司产品的分布图过程当中，所先将数据库中的数据读取出来保存在Map中，再通过FileWriter将Map的内容写入到文件中保存，前台页面直接读取文件解析。 问题是这样的： 我在测试时，是直接通过main方法来测试写入文件的，在这种情况下，写入后文件的编码的正常的，文件也">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/FileWriter和PrintWriter乱码问题/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="java io之FileWriter  PrintWriter类的问题场景描述： tomcat下，利用fusioncharts实现公司产品的分布图过程当中，所先将数据库中的数据读取出来保存在Map中，再通过FileWriter将Map的内容写入到文件中保存，前台页面直接读取文件解析。 问题是这样的： 我在测试时，是直接通过main方法来测试写入文件的，在这种情况下，写入后文件的编码的正常的，文件也">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.881Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="java io之FileWriter  PrintWriter类的问题场景描述： tomcat下，利用fusioncharts实现公司产品的分布图过程当中，所先将数据库中的数据读取出来保存在Map中，再通过FileWriter将Map的内容写入到文件中保存，前台页面直接读取文件解析。 问题是这样的： 我在测试时，是直接通过main方法来测试写入文件的，在这种情况下，写入后文件的编码的正常的，文件也">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/FileWriter和PrintWriter乱码问题" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/FileWriter和PrintWriter乱码问题/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.364Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java-io之FileWriter-PrintWriter类的问题"><a href="#java-io之FileWriter-PrintWriter类的问题" class="headerlink" title="java io之FileWriter  PrintWriter类的问题"></a>java io之FileWriter  PrintWriter类的问题</h2><p>场景描述：</p>
+<p>tomcat下，利用fusioncharts实现公司产品的分布图过程当中，所先将数据库中的数据读取出来保存在Map中，再通过FileWriter将Map的内容写入到文件中保存，前台页面直接读取文件解析。</p>
+<p>问题是这样的：</p>
+<p>我在测试时，是直接通过main方法来测试写入文件的，在这种情况下，写入后文件的编码的正常的，文件也没有出现乱码;然后我就把应用发布到tomcat中，在tomcat中运行的时候，竟然出现了乱码，这让我很是疑惑。我就想着换一种写入流，换成PrintWriter后，用main方法的方式也是正常的，但是发布到tomcat后又是乱码。然后就在网上各种找，各种搜。有什么FileWriter默认便是是ISO-8859-1，什么ASCII之类的答案，我就试，各种编码换了都不行。最后在网上搜到一种方法:用OutputStringWriter类，该类有一个设置编码的构造函数。然后我也试一下，将编码设置成UTF-8，哎，问题解决了，不乱码了。很高兴啊，搞了大半天了，终于搞定了。然后我又回来研究FileWriter到底是为什么不行，我用FileWriter的时候也设置过UTF-8呀，为什么就是不行呢。在网上找到一个方法:FileWriter有个getEncoding()的方法可以得到该类的当前编码方式，我就打印看一下，发现在用main方法测试时，输出的是UTF-8，而在用tomcat测试时输出的是GBK。我就想不清了，到底是为什么呢，代码都没变，就是从main方式变为了tomcat而已，操蛋的，怎么就这样了呢。我就另外写了个测试类实验。就发现问题了:当main方法时(实现代码和main方法在一个类中)输出UTF-8，这个输出值是会变的，根据什么变呢，就是你的文件保存时的编码方式。也就是说如果你的类是用utf8方式保存的，那getEncoding()就输出utf8，是ISO8859-1就是输出ISO8859-1，是ASCII就是输出ASCII，而并不是网上所说的有什么默认的编码方式之类的。但是问题还没解决啊，我应用里文件的编码格式又没换过，不至于换成tomcat就乱码了呀。我就想是不是跟调用FileWriter类的调用者有关系，有了这个想法，我就又测试了一下，将写文件的操作放在一个类里，用另一个类调用，并且两个类的编码格式不一样，结果果然是输出调用者类的编码格式。由此就得到一个结果:FileWriter的默认编码格式是跟调用者的编码格式相关的。如果要解决字符流写入乱码的问题，最好的方式是使用OutputStreamWriter类来实现</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/FileWriter和PrintWriter乱码问题/" data-id="cj7o7n5ux0000ewaiqbki3q5m" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/java中路径获取总结/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hello World</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

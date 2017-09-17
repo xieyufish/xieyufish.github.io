@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Bean的生命周期bean的创建和销毁：在一个bean被创建和销毁的时候，要执行某些资源加载或者说是资源释放的操作，此时就有必要实现一些初始化和销毁的方法来执行这些操作，这些初始化操作都是发生在属性值被注入之后才开始执行的spring提供了三种初始化方式来初始化一个bean：  spring提供的初始化接口—InitializingBean提供了bean的初始化执行方法，只要一个bean实现了了该">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/spring/bean的生命周期/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Bean的生命周期bean的创建和销毁：在一个bean被创建和销毁的时候，要执行某些资源加载或者说是资源释放的操作，此时就有必要实现一些初始化和销毁的方法来执行这些操作，这些初始化操作都是发生在属性值被注入之后才开始执行的spring提供了三种初始化方式来初始化一个bean：  spring提供的初始化接口—InitializingBean提供了bean的初始化执行方法，只要一个bean实现了了该">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.881Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="Bean的生命周期bean的创建和销毁：在一个bean被创建和销毁的时候，要执行某些资源加载或者说是资源释放的操作，此时就有必要实现一些初始化和销毁的方法来执行这些操作，这些初始化操作都是发生在属性值被注入之后才开始执行的spring提供了三种初始化方式来初始化一个bean：  spring提供的初始化接口—InitializingBean提供了bean的初始化执行方法，只要一个bean实现了了该">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/spring/bean的生命周期" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/spring/bean的生命周期/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.408Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Bean的生命周期"><a href="#Bean的生命周期" class="headerlink" title="Bean的生命周期"></a>Bean的生命周期</h2><p>bean的创建和销毁：在一个bean被创建和销毁的时候，要执行某些资源加载或者说是资源释放的操作，此时就有必要实现一些初始化和销毁的方法来执行这些操作，这些初始化操作都是发生在属性值被注入之后才开始执行的spring提供了三种初始化方式来初始化一个bean：</p>
+<ol>
+<li>spring提供的初始化接口—InitializingBean提供了bean的初始化执行方法，只要一个bean实现了了该接口，那么spring容器就会自动调用执行实现的接口方法afterPropertiesSet()    spring提供的销毁接口—–DisposableBean提供了bean销毁时执行的方法，只用bean实现了该接口，那么在一个bean被spring销毁的时候就会自动调用该接口的实现方法destroy()</li>
+<li>在spring配置文件中的bean配置元素中，指定init-method和destroy-method属性值来指定bean的特定的初始化和销毁方法</li>
+<li>在spring配置文件中的根元素beans中，指定一个全局默认的default-init-method和default-destroy-method两个属性值，此两个属性值就代表bean中的初始化和销毁的方法名，   如果bean没有实现这两个方法，spring容器也不会报错，此初始化方法的优先级是最低的，当第二种方式存在时可被第二种方式覆盖。</li>
+</ol>
+<p>当三种初始化方式并存时，第一种初始化方式先被执行，接着第二种方式执行，第三种初始化方式将不被执行当1、2或者1、3方式并存时，第一种初始化方式先被执行，接口其他方式被执行，2、3并存时，第三种方式不被执行</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/spring/bean的生命周期/" data-id="cj7o7n5x50006ewaisn8nwhws" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/spring/spring4.2文档学习(一)/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/java/spring/Autowired-Resource注解对比/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

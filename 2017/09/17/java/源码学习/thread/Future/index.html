@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="java源码解析-Future类Future是在jdk1.5之后才加入进来，属于java.util.concurrent.*框架中的一个接口。 Future接口定义了一个异步计算结果的规则。在Future类中的方法可以用来检查计算是否完成，等待计算完成，取得计算结果。结果只能通过方法get()来获取，他会阻塞等待计算结果；同时也可以取消一个异步计算任务，但是这个任务必须是要没有开始执行的。如果我们">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/源码学习/thread/Future/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="java源码解析-Future类Future是在jdk1.5之后才加入进来，属于java.util.concurrent.*框架中的一个接口。 Future接口定义了一个异步计算结果的规则。在Future类中的方法可以用来检查计算是否完成，等待计算完成，取得计算结果。结果只能通过方法get()来获取，他会阻塞等待计算结果；同时也可以取消一个异步计算任务，但是这个任务必须是要没有开始执行的。如果我们">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.897Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="java源码解析-Future类Future是在jdk1.5之后才加入进来，属于java.util.concurrent.*框架中的一个接口。 Future接口定义了一个异步计算结果的规则。在Future类中的方法可以用来检查计算是否完成，等待计算完成，取得计算结果。结果只能通过方法get()来获取，他会阻塞等待计算结果；同时也可以取消一个异步计算任务，但是这个任务必须是要没有开始执行的。如果我们">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/源码学习/thread/Future" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/thread/Future/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.443Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-Future类"><a href="#java源码解析-Future类" class="headerlink" title="java源码解析-Future类"></a>java源码解析-Future类</h2><p>Future是在jdk1.5之后才加入进来，属于java.util.concurrent.*框架中的一个接口。</p>
+<p>Future接口定义了一个异步计算结果的规则。在Future类中的方法可以用来检查计算是否完成，等待计算完成，取得计算结果。结果只能通过方法get()来获取，他会阻塞等待计算结果；同时也可以取消一个异步计算任务，但是这个任务必须是要没有开始执行的。如果我们只想用Future来实现一个可以取消的任务而不是要获取一个可用的计算结果，那么我们可以声明为Future&lt;?&gt;，然后再get()方法中返回null。<br>Future的使用方式如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="number">1</span>. 直接使用Future,从ExecutorService中返回一个Future实例</div><div class="line"><span class="class"><span class="keyword">interface</span> <span class="title">ArchiveSearcher</span> </span>&#123; <span class="function">String <span class="title">search</span><span class="params">(String target)</span></span>; &#125;</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">App</span> </span>&#123;</div><div class="line">  ExecutorService executor = ...</div><div class="line">  ArchiveSearcher searcher = ...</div><div class="line">  <span class="function"><span class="keyword">void</span> <span class="title">showSearch</span><span class="params">(<span class="keyword">final</span> String target)</span></span></div><div class="line"><span class="function">      <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">    Future&lt;String&gt; future</div><div class="line">      = executor.submit(<span class="keyword">new</span> Callable&lt;String&gt;() &#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> searcher.search(target);</div><div class="line">        &#125;&#125;);</div><div class="line">    displayOtherThings(); <span class="comment">// do other things while searching</span></div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">      displayText(future.get()); <span class="comment">// use future</span></div><div class="line">    &#125; <span class="keyword">catch</span> (ExecutionException ex) &#123; cleanup(); <span class="keyword">return</span>; &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="number">2</span>. 使用FutureTask类,FutureTask是RunnableFuture接口的一个基本实现.</div><div class="line">FutureTask&lt;String&gt; future =</div><div class="line"><span class="keyword">new</span> FutureTask&lt;String&gt;(<span class="keyword">new</span> Callable&lt;String&gt;() &#123;</div><div class="line"> <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">return</span> searcher.search(target);</div><div class="line">&#125;&#125;);</div><div class="line">executor.execute(future);</div></pre></td></tr></table></figure>
+<h3 id="方法定义"><a href="#方法定义" class="headerlink" title="方法定义"></a>方法定义</h3><p>下面看看Future接口里面定义的方法, 他的具体实现将在FutureTask中分析</p>
+<blockquote>
+<p>boolean cancel(boolean mayInterruptIfRunning);<br>取消一个异步计算任务</p>
+<p>boolean isCancelled();<br>判断任务是否被取消</p>
+<p>boolean isDone();<br>判断任务是否完成, 任务完成的状态标志包括:正常结束, 出现异常, 被取消</p>
+<p>V get() throws InterruptedException, ExecutionException;<br>获取异步任务结果</p>
+<p>V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;<br>在给定的时间范围内获取异步任务结果</p>
+</blockquote>
+<p>RunnableFuture(V)继承自Future和Runnable，使得Future是可执行的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/thread/Future/" data-id="cj7o7n5xn000fewaihbqogzn2" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/源码学习/thread/FutureTask/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/java/源码学习/annotation/Annotation/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

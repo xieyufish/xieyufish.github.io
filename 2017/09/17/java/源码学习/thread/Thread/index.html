@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="java源码解析-Thread类Thread：java中的线程类, 实现了Runnable接口(只有一个run()方法)。在java中创建一个线程的方式有：可以new一个Thread或者继承Thread或者实现Runnable接口(并传递给Thread对象)。 Thread类中定义了线程的优先级分为十个等级，从1到10，默认新建线程的优先级为5。源码如下： 1234567891011121314/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/源码学习/thread/Thread/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="java源码解析-Thread类Thread：java中的线程类, 实现了Runnable接口(只有一个run()方法)。在java中创建一个线程的方式有：可以new一个Thread或者继承Thread或者实现Runnable接口(并传递给Thread对象)。 Thread类中定义了线程的优先级分为十个等级，从1到10，默认新建线程的优先级为5。源码如下： 1234567891011121314/">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.897Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="java源码解析-Thread类Thread：java中的线程类, 实现了Runnable接口(只有一个run()方法)。在java中创建一个线程的方式有：可以new一个Thread或者继承Thread或者实现Runnable接口(并传递给Thread对象)。 Thread类中定义了线程的优先级分为十个等级，从1到10，默认新建线程的优先级为5。源码如下： 1234567891011121314/">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/源码学习/thread/Thread" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/thread/Thread/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.452Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-Thread类"><a href="#java源码解析-Thread类" class="headerlink" title="java源码解析-Thread类"></a>java源码解析-Thread类</h2><p><strong>Thread：</strong>java中的线程类, 实现了Runnable接口(只有一个run()方法)。在java中创建一个线程的方式有：可以new一个Thread或者继承Thread或者实现Runnable接口(并传递给Thread对象)。</p>
+<p>Thread类中定义了线程的优先级分为十个等级，从1到10，默认新建线程的优先级为5。源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* The minimum priority that a thread can have.</span></div><div class="line"><span class="comment">*/</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span> MIN_PRIORITY = <span class="number">1</span>;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* The default priority that is assigned to a thread.</span></div><div class="line"><span class="comment">*/</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span> NORM_PRIORITY = <span class="number">5</span>;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* The maximum priority that a thread can have.</span></div><div class="line"><span class="comment">*/</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span> MAX_PRIORITY = <span class="number">10</span>;</div></pre></td></tr></table></figure>
+<p>在Thread中包含有一个Runnable类型的实例变量target，Thread线程启动执行时，就是运行的target中run方法里面的内容。</p>
+<h3 id="核心方法"><a href="#核心方法" class="headerlink" title="核心方法"></a>核心方法</h3><blockquote>
+<p>init方法，初始化一个线程，在new Thread()的时候，会调用</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ThreadGroup g, Runnable target, String name,</span></span></div><div class="line"><span class="function"><span class="params">                  <span class="keyword">long</span> stackSize)</span> </span>&#123;</div><div class="line">  init(g, target, name, stackSize, <span class="keyword">null</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ThreadGroup g, Runnable target, String name,</span></span></div><div class="line"><span class="function"><span class="params">                      <span class="keyword">long</span> stackSize, AccessControlContext acc)</span> </span>&#123;</div><div class="line">      <span class="comment">// 线程的名字不能为空, 如果在new的时候没有传入线程名字name, 那么将使用"Thread-" + nextThreadNum() --- Thread中的同步静态方法,实现递增  这种方式命名</span></div><div class="line">        <span class="keyword">if</span> (name == <span class="keyword">null</span>) &#123;       </div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"name cannot be null"</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">this</span>.name = name.toCharArray(); <span class="comment">//设置线程名字</span></div><div class="line">		</div><div class="line">  		<span class="comment">//获取当前正在执行的线程(也就是在执行 new Thread()操作的线程)作为本线程的父线程</span></div><div class="line">        Thread parent = currentThread();      </div><div class="line">        SecurityManager security = System.getSecurityManager();          <span class="comment">//获取系统安全管理器</span></div><div class="line">        <span class="keyword">if</span> (g == <span class="keyword">null</span>) &#123;                      <span class="comment">//如果传进来的线程组对象为空,</span></div><div class="line">            <span class="comment">/* Determine if it's an applet or not */</span></div><div class="line"></div><div class="line">            <span class="comment">/* If there is a security manager, ask the security manager</span></div><div class="line"><span class="comment">               what to do. */</span></div><div class="line">          	<span class="comment">//获取系统安全管理器所在的线程组, 其实就是当前正在执行线程所在的线程组</span></div><div class="line">            <span class="keyword">if</span> (security != <span class="keyword">null</span>) &#123;</div><div class="line">                g = security.getThreadGroup();      <span class="comment">//security.getThreadGroup()的实现代码:  </span></div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">/* If the security doesn't have a strong opinion of the matter</span></div><div class="line"><span class="comment">               use the parent thread group. */</span></div><div class="line">            <span class="keyword">if</span> (g == <span class="keyword">null</span>) &#123;   <span class="comment">//如果安全管理器为空, 那么就跟父线程在同一个线程组</span></div><div class="line">                g = parent.getThreadGroup();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">/* checkAccess regardless of whether or not threadgroup is</span></div><div class="line"><span class="comment">           explicitly passed in. */</span></div><div class="line">        g.checkAccess();</div><div class="line"></div><div class="line">        <span class="comment">/*</span></div><div class="line"><span class="comment">         * Do we have the required permissions?</span></div><div class="line"><span class="comment">         */</span></div><div class="line">        <span class="keyword">if</span> (security != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (isCCLOverridden(getClass())) &#123;</div><div class="line">                security.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        g.addUnstarted();          <span class="comment">//线程组中未开始线程数 + 1</span></div><div class="line"></div><div class="line">        <span class="keyword">this</span>.group = g;         <span class="comment">//设置本线程所在线程组</span></div><div class="line">        <span class="keyword">this</span>.daemon = parent.isDaemon();    <span class="comment">//设置本线程是否后台线程, 如果父线程是后台线程那么本线程也是, 也就是说一个线程是否后台线程跟父线程(也就是创建他的线程)有关</span></div><div class="line">        <span class="keyword">this</span>.priority = parent.getPriority();     <span class="comment">//暂时设置本线程的优先级为父线程的优先级, 下面会做修改</span></div><div class="line">        <span class="keyword">if</span> (security == <span class="keyword">null</span> || isCCLOverridden(parent.getClass()))</div><div class="line">            <span class="keyword">this</span>.contextClassLoader = parent.getContextClassLoader();</div><div class="line">        <span class="keyword">else</span></div><div class="line">            <span class="keyword">this</span>.contextClassLoader = parent.contextClassLoader;</div><div class="line">        <span class="keyword">this</span>.inheritedAccessControlContext =</div><div class="line">                acc != <span class="keyword">null</span> ? acc : AccessController.getContext();</div><div class="line">        <span class="keyword">this</span>.target = target;        <span class="comment">//设置本线程的实际执行体, 由调用传入</span></div><div class="line">        setPriority(priority);       <span class="comment">//设置线程优先级, 如果参数priority的值大于所在线程组设置的最大优先级, 那么重新设置本线程优先级为线程组的最大优先级, 否则不变. 也就是说线程的优先级不能大于所在线程组设置的最大优先级</span></div><div class="line">        <span class="keyword">if</span> (parent.inheritableThreadLocals != <span class="keyword">null</span>)</div><div class="line">            <span class="keyword">this</span>.inheritableThreadLocals =</div><div class="line">                ThreadLocal.createInheritedMap(parent.inheritableThreadLocals);</div><div class="line">        <span class="comment">/* Stash the specified stack size in case the VM cares */</span></div><div class="line">        <span class="keyword">this</span>.stackSize = stackSize;      <span class="comment">//线程栈的大小</span></div><div class="line"></div><div class="line">        <span class="comment">/* Set thread ID */</span></div><div class="line">        tid = nextThreadID();     <span class="comment">//线程id</span></div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>start()方法，start方法中实际调用的是本地方法start0</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="comment">/**</span></div><div class="line"><span class="comment">         * This method is not invoked for the main method thread or "system"</span></div><div class="line"><span class="comment">         * group threads created/set up by the VM. Any new functionality added</span></div><div class="line"><span class="comment">         * to this method in the future may have to also be added to the VM.</span></div><div class="line"><span class="comment">         *</span></div><div class="line"><span class="comment">         * A zero status value corresponds to state "NEW".</span></div><div class="line"><span class="comment">         */</span></div><div class="line">  <span class="keyword">if</span> (threadStatus != <span class="number">0</span>)</div><div class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalThreadStateException();</div><div class="line"></div><div class="line">  <span class="comment">/* Notify the group that this thread is about to be started</span></div><div class="line"><span class="comment">         * so that it can be added to the group's list of threads</span></div><div class="line"><span class="comment">         * and the group's unstarted count can be decremented. */</span></div><div class="line">  <span class="comment">//加入到当前线程组中</span></div><div class="line">  group.add(<span class="keyword">this</span>);</div><div class="line"></div><div class="line">  <span class="keyword">boolean</span> started = <span class="keyword">false</span>;</div><div class="line">  <span class="keyword">try</span> &#123;</div><div class="line">    start0();</div><div class="line">    started = <span class="keyword">true</span>;</div><div class="line">  &#125; <span class="keyword">finally</span> &#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">      <span class="keyword">if</span> (!started) &#123;</div><div class="line">        group.threadStartFailed(<span class="keyword">this</span>);        <span class="comment">//  如果线程开始失败, 那么就会从线程组中移除</span></div><div class="line">      &#125;</div><div class="line">    &#125; <span class="keyword">catch</span> (Throwable ignore) &#123;</div><div class="line">      <span class="comment">/* do nothing. If start0 threw a Throwable then</span></div><div class="line"><span class="comment">                  it will be passed up the call stack */</span></div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">start0</span><span class="params">()</span></span>;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>run()方法，实际执行target对象的run()方法</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (target != <span class="keyword">null</span>) &#123;</div><div class="line">  	target.run();</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="线程状态"><a href="#线程状态" class="headerlink" title="线程状态"></a>线程状态</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">enum</span> State &#123;</div><div class="line">  <span class="comment">/**</span></div><div class="line"><span class="comment">  * Thread state for a thread which has not yet started.</span></div><div class="line"><span class="comment">  */</span></div><div class="line">  NEW,　　　　<span class="comment">//线程创建还没有开始, 算是就绪状态吧</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line"><span class="comment">    * Thread state for a runnable thread.  A thread in the runnable</span></div><div class="line"><span class="comment">    * state is executing in the Java virtual machine but it may</span></div><div class="line"><span class="comment">    * be waiting for other resources from the operating system</span></div><div class="line"><span class="comment">    * such as processor.</span></div><div class="line"><span class="comment">    */</span></div><div class="line">    RUNNABLE,     <span class="comment">// 运行时状态</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line"><span class="comment">    * Thread state for a thread blocked waiting for a monitor lock.</span></div><div class="line"><span class="comment">    * A thread in the blocked state is waiting for a monitor lock</span></div><div class="line"><span class="comment">    * to enter a synchronized block/method or</span></div><div class="line"><span class="comment">    * reenter a synchronized block/method after calling</span></div><div class="line"><span class="comment">    * &#123;<span class="doctag">@link</span> Object#wait() Object.wait&#125;.</span></div><div class="line"><span class="comment">    */</span></div><div class="line">    BLOCKED,     <span class="comment">//  堵塞</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line"><span class="comment">    * Thread state for a waiting thread.</span></div><div class="line"><span class="comment">    * A thread is in the waiting state due to calling one of the</span></div><div class="line"><span class="comment">    * following methods:</span></div><div class="line"><span class="comment">    * &lt;ul&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> Object#wait() Object.wait&#125; with no timeout&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> #join() Thread.join&#125; with no timeout&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> LockSupport#park() LockSupport.park&#125;&lt;/li&gt;</span></div><div class="line"><span class="comment">    * &lt;/ul&gt;</span></div><div class="line"><span class="comment">    *</span></div><div class="line"><span class="comment">    * &lt;p&gt;A thread in the waiting state is waiting for another thread to</span></div><div class="line"><span class="comment">    * perform a particular action.</span></div><div class="line"><span class="comment">    *</span></div><div class="line"><span class="comment">    * For example, a thread that has called &lt;tt&gt;Object.wait()&lt;/tt&gt;</span></div><div class="line"><span class="comment">    * on an object is waiting for another thread to call</span></div><div class="line"><span class="comment">    * &lt;tt&gt;Object.notify()&lt;/tt&gt; or &lt;tt&gt;Object.notifyAll()&lt;/tt&gt; on</span></div><div class="line"><span class="comment">    * that object. A thread that has called &lt;tt&gt;Thread.join()&lt;/tt&gt;</span></div><div class="line"><span class="comment">    * is waiting for a specified thread to terminate.</span></div><div class="line"><span class="comment">    */</span></div><div class="line">    WAITING,   <span class="comment">// 等待</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line"><span class="comment">    * Thread state for a waiting thread with a specified waiting time.</span></div><div class="line"><span class="comment">    * A thread is in the timed waiting state due to calling one of</span></div><div class="line"><span class="comment">    * the following methods with a specified positive waiting time:</span></div><div class="line"><span class="comment">    * &lt;ul&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> #sleep Thread.sleep&#125;&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> Object#wait(long) Object.wait&#125; with timeout&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> #join(long) Thread.join&#125; with timeout&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> LockSupport#parkNanos LockSupport.parkNanos&#125;&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> LockSupport#parkUntil LockSupport.parkUntil&#125;&lt;/li&gt;</span></div><div class="line"><span class="comment">    * &lt;/ul&gt;</span></div><div class="line"><span class="comment">    */</span></div><div class="line">    TIMED_WAITING,   <span class="comment">//有时间限制的等待</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line"><span class="comment">    * Thread state for a terminated thread.</span></div><div class="line"><span class="comment">    * The thread has completed execution.</span></div><div class="line"><span class="comment">    */</span></div><div class="line">    TERMINATED;   <span class="comment">//终止</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/thread/Thread/" data-id="cj7o7n603000iewai0sret351" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/源码学习/thread/ThreadLocal/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/java/源码学习/thread/FutureTask/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

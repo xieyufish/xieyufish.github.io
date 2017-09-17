@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="java源码解析-TreeMap类TreeMap：基于红黑树实现的一个有序的Map实现类。这个有序的维护是通过key实现的Comparable接口或者是在构造时传入的Comparator类来实现它的一个排序规则的。TreeMap的实现保证了containsKey()，put()，get()，remove()操作的时间复杂度均是log(n)(n是树上的entry数)。TreeMap是非线程安全类，如">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/源码学习/util/TreeMap/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="java源码解析-TreeMap类TreeMap：基于红黑树实现的一个有序的Map实现类。这个有序的维护是通过key实现的Comparable接口或者是在构造时传入的Comparator类来实现它的一个排序规则的。TreeMap的实现保证了containsKey()，put()，get()，remove()操作的时间复杂度均是log(n)(n是树上的entry数)。TreeMap是非线程安全类，如">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.897Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="java源码解析-TreeMap类TreeMap：基于红黑树实现的一个有序的Map实现类。这个有序的维护是通过key实现的Comparable接口或者是在构造时传入的Comparator类来实现它的一个排序规则的。TreeMap的实现保证了containsKey()，put()，get()，remove()操作的时间复杂度均是log(n)(n是树上的entry数)。TreeMap是非线程安全类，如">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/源码学习/util/TreeMap" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/TreeMap/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.487Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-TreeMap类"><a href="#java源码解析-TreeMap类" class="headerlink" title="java源码解析-TreeMap类"></a>java源码解析-TreeMap类</h2><p>TreeMap：基于红黑树实现的一个有序的Map实现类。这个有序的维护是通过key实现的Comparable接口或者是在构造时传入的Comparator类来实现它的一个排序规则的。TreeMap的实现保证了containsKey()，put()，get()，remove()操作的时间复杂度均是log(n)(n是树上的entry数)。TreeMap是非线程安全类，如果多个线程同时访问来修改treemap的结构(改变结构是指执行了添加或者删除操作，如果改变一个已经存在的key的值这类操作则不算是改变结构)，那么必须在外部来保证对这个treemap的同步访问。<br>如果要对一个treemap进行同步访问，我们也可以使用java中提供的同步包装类来实现同步，例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SortedMap m = Collections.synchronizedSortedMap(<span class="keyword">new</span> TreeMap(...));</div></pre></td></tr></table></figure>
+<p>下面我们来看看TreeMap中的Entry是一种什么样的结构：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</div><div class="line">    K key; </div><div class="line">    V value;</div><div class="line">    Entry&lt;K,V&gt; left = <span class="keyword">null</span>;  <span class="comment">// 左子树</span></div><div class="line">    Entry&lt;K,V&gt; right = <span class="keyword">null</span>;  <span class="comment">// 右子树</span></div><div class="line">    Entry&lt;K,V&gt; parent;  <span class="comment">// 父节点</span></div><div class="line">    <span class="keyword">boolean</span> color = BLACK;  <span class="comment">// 本节点的颜色(红黑两种)</span></div><div class="line">    </div><div class="line">    Entry(K key, V value, Entry&lt;K,V&gt; parent) &#123;</div><div class="line">        <span class="keyword">this</span>.key = key;</div><div class="line">        <span class="keyword">this</span>.value = value;</div><div class="line">        <span class="keyword">this</span>.parent = parent;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="类定义"><a href="#类定义" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TreeMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">AbstractMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">NavigableMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;, <span class="title">Cloneable</span>, <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span></span></div></pre></td></tr></table></figure>
+<h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>private final Comparator&lt;? super K&gt;</td>
+<td>comparator</td>
+<td>排序比较类</td>
+</tr>
+<tr>
+<td>private transient Entry\<k,v></k,v></td>
+<td>root = null</td>
+<td>红黑树的根节点</td>
+</tr>
+<tr>
+<td>private transient int</td>
+<td>size = 0</td>
+<td>entry数量</td>
+</tr>
+<tr>
+<td>private transient int</td>
+<td>modCount = 0</td>
+<td>记录改变结构的次数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="方法讲解-只讲解put和get操作"><a href="#方法讲解-只讲解put和get操作" class="headerlink" title="方法讲解-只讲解put和get操作"></a>方法讲解-只讲解put和get操作</h3><blockquote>
+<p><strong>添加元素 put()</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* 1. 首先判断根元素是否为空,也就是当前put进来的entry是否是第一次操作</span></div><div class="line"><span class="comment">* 2. 如果是第一次put,则直接创建entry并赋值给root</span></div><div class="line"><span class="comment">* 3. 如果不是第一次put(也就是root不为null),则获取比较器</span></div><div class="line"><span class="comment">* 4. 将新增的key从根节点开始比较,</span></div><div class="line"><span class="comment">*    小于根节点则继续跟当前节点的左子树的根节点比较;</span></div><div class="line"><span class="comment">*    大于根节点则继续跟当前节点的右子树的根节点比较;</span></div><div class="line"><span class="comment">*    如果等于当前节点则直接用value替换原来的值并返回原来的值</span></div><div class="line"><span class="comment">* 5. 最后如果不是执行的替换操作,而是执行的插入则要重新调整树的结构,</span></div><div class="line"><span class="comment">*    让新树符合红黑树的规则.</span></div><div class="line"><span class="comment">**/</span></div><div class="line"><span class="function"><span class="keyword">public</span> V <span class="title">put</span><span class="params">(K key, V value)</span> </span>&#123;</div><div class="line">    Entry&lt;K,V&gt; t = root;</div><div class="line">    <span class="keyword">if</span> (t == <span class="keyword">null</span>) &#123;</div><div class="line">        compare(key, key); <span class="comment">// type (and possibly null) check</span></div><div class="line"></div><div class="line">        root = <span class="keyword">new</span> Entry&lt;&gt;(key, value, <span class="keyword">null</span>);</div><div class="line">        size = <span class="number">1</span>;</div><div class="line">        modCount++;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">int</span> cmp;</div><div class="line">    Entry&lt;K,V&gt; parent;</div><div class="line">    <span class="comment">// split comparator and comparable paths</span></div><div class="line">    Comparator&lt;? <span class="keyword">super</span> K&gt; cpr = comparator;</div><div class="line">    <span class="keyword">if</span> (cpr != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">do</span> &#123;</div><div class="line">            parent = t;</div><div class="line">            cmp = cpr.compare(key, t.key);</div><div class="line">            <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)</div><div class="line">                t = t.left;</div><div class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>)</div><div class="line">                t = t.right;</div><div class="line">            <span class="keyword">else</span></div><div class="line">                <span class="keyword">return</span> t.setValue(value);</div><div class="line">        &#125; <span class="keyword">while</span> (t != <span class="keyword">null</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">if</span> (key == <span class="keyword">null</span>)</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</div><div class="line">        Comparable&lt;? <span class="keyword">super</span> K&gt; k = (Comparable&lt;? <span class="keyword">super</span> K&gt;) key;</div><div class="line">        <span class="keyword">do</span> &#123;</div><div class="line">            parent = t;</div><div class="line">            cmp = k.compareTo(t.key);</div><div class="line">            <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)</div><div class="line">                t = t.left;</div><div class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>)</div><div class="line">                t = t.right;</div><div class="line">            <span class="keyword">else</span></div><div class="line">                <span class="keyword">return</span> t.setValue(value);</div><div class="line">        &#125; <span class="keyword">while</span> (t != <span class="keyword">null</span>);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 遍历完成,找到新增节点放置的位置</span></div><div class="line">    Entry&lt;K,V&gt; e = <span class="keyword">new</span> Entry&lt;&gt;(key, value, parent);</div><div class="line">    <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)  <span class="comment">// 比父节点小,放在左子树</span></div><div class="line">        parent.left = e;</div><div class="line">    <span class="keyword">else</span>   <span class="comment">// 大,放在右子树</span></div><div class="line">        parent.right = e;</div><div class="line">    </div><div class="line">    <span class="comment">// 重新调整树使之符合红黑树的规则</span></div><div class="line">    <span class="comment">// (此过程比较复杂,需了解红黑树算法规则,在此暂不分析)</span></div><div class="line">    fixAfterInsertion(e);</div><div class="line">    size++;</div><div class="line">    modCount++;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>获取元素get()</strong><br>TreeMap的get()操作就是通过比较循环获取左右子树比较的一个过程，直到找到对应的节点</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</div><div class="line">    Entry&lt;K,V&gt; p = getEntry(key);</div><div class="line">    <span class="keyword">return</span> (p==<span class="keyword">null</span> ? <span class="keyword">null</span> : p.value);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">final</span> Entry&lt;K,V&gt; <span class="title">getEntry</span><span class="params">(Object key)</span> </span>&#123;</div><div class="line">    <span class="comment">// Offload comparator-based version for sake of performance</span></div><div class="line">    <span class="keyword">if</span> (comparator != <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">return</span> getEntryUsingComparator(key);</div><div class="line">    <span class="keyword">if</span> (key == <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</div><div class="line">    Comparable&lt;? <span class="keyword">super</span> K&gt; k = (Comparable&lt;? <span class="keyword">super</span> K&gt;) key;</div><div class="line">    Entry&lt;K,V&gt; p = root;</div><div class="line">    <span class="keyword">while</span> (p != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">int</span> cmp = k.compareTo(p.key);</div><div class="line">        <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)</div><div class="line">            p = p.left;</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>)</div><div class="line">            p = p.right;</div><div class="line">        <span class="keyword">else</span></div><div class="line">            <span class="keyword">return</span> p;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">final</span> Entry&lt;K,V&gt; <span class="title">getEntryUsingComparator</span><span class="params">(Object key)</span> </span>&#123;</div><div class="line">    K k = (K) key;</div><div class="line">    Comparator&lt;? <span class="keyword">super</span> K&gt; cpr = comparator;</div><div class="line">    <span class="keyword">if</span> (cpr != <span class="keyword">null</span>) &#123;</div><div class="line">        Entry&lt;K,V&gt; p = root;</div><div class="line">        <span class="keyword">while</span> (p != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">int</span> cmp = cpr.compare(k, p.key);</div><div class="line">            <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)</div><div class="line">                p = p.left;</div><div class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>)</div><div class="line">                p = p.right;</div><div class="line">            <span class="keyword">else</span></div><div class="line">                <span class="keyword">return</span> p;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/TreeMap/" data-id="cj7o7n60g000pewaimg8hv2rl" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/源码学习/util/Vector/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/java/源码学习/util/Timer/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

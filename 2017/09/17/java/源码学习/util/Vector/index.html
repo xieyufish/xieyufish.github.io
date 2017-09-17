@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="java源码解析-Vector类Vector是java中线程安全的list，每个公有方法均被synchronized修饰，在多线程环境下推荐使用这个类来创建list。与Arraylist在一些区别是：a. 容量会自动扩充和缩小b. 容量扩充的大小通过构造方式传入或者默认的两倍 类定义123public class Vector&amp;lt;E&amp;gt;    extends AbstractList&amp;lt">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/源码学习/util/Vector/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="java源码解析-Vector类Vector是java中线程安全的list，每个公有方法均被synchronized修饰，在多线程环境下推荐使用这个类来创建list。与Arraylist在一些区别是：a. 容量会自动扩充和缩小b. 容量扩充的大小通过构造方式传入或者默认的两倍 类定义123public class Vector&amp;lt;E&amp;gt;    extends AbstractList&amp;lt">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.897Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="java源码解析-Vector类Vector是java中线程安全的list，每个公有方法均被synchronized修饰，在多线程环境下推荐使用这个类来创建list。与Arraylist在一些区别是：a. 容量会自动扩充和缩小b. 容量扩充的大小通过构造方式传入或者默认的两倍 类定义123public class Vector&amp;lt;E&amp;gt;    extends AbstractList&amp;lt">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/源码学习/util/Vector" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/Vector/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.490Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-Vector类"><a href="#java源码解析-Vector类" class="headerlink" title="java源码解析-Vector类"></a>java源码解析-Vector类</h2><p>Vector是java中线程安全的list，每个公有方法均被synchronized修饰，在多线程环境下推荐使用这个类来创建list。与Arraylist在一些区别是：<br>a. 容量会自动扩充和缩小<br>b. 容量扩充的大小通过构造方式传入或者默认的两倍</p>
+<h3 id="类定义"><a href="#类定义" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Vector</span>&lt;<span class="title">E</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">AbstractList</span>&lt;<span class="title">E</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">List</span>&lt;<span class="title">E</span>&gt;, <span class="title">RandomAccess</span>, <span class="title">Cloneable</span>, <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span></span></div></pre></td></tr></table></figure>
+<h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>protected int</td>
+<td>capacityIncrement</td>
+<td>扩容大小</td>
+</tr>
+<tr>
+<td>protected Object[]</td>
+<td>elementData</td>
+<td>存储数据的数组对象</td>
+</tr>
+<tr>
+<td>protected int</td>
+<td>elementCount</td>
+<td>list中存储数据的实际容量</td>
+</tr>
+<tr>
+<td>protected transient int</td>
+<td>modCount</td>
+<td>继承自AbstractList,记录elementCount变化的次数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="构造方式"><a href="#构造方式" class="headerlink" title="构造方式"></a>构造方式</h3><blockquote>
+<p>public Vector(int initialCapacity, int capacityIncrement)<br>创建一个容量大小为initialCapacity，每次扩容增加capacityIncrement个位置的vector</p>
+<p>public Vector(int initialCapacity)<br>创建一个容量大小为initialCapacity，每次扩容到当前容量的两倍</p>
+<p>public Vector()<br>创建一个容量大小为10，每次扩容到当前容量的两倍</p>
+<p>public Vector(Collection&lt;? extends E&gt; c)<br>从其他Collection创建vector</p>
+</blockquote>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><blockquote>
+<p><strong>public synchronized void setSize(int newSize)</strong><br>设定当前vector的elementCount值，如果newSize&gt;elementCount，那么多余的位置用null填充，如果newSize&lt;elementCount，那么截断newSize后的元素。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">setSize</span><span class="params">(<span class="keyword">int</span> newSize)</span> </span>&#123;</div><div class="line">    modCount++;</div><div class="line">    <span class="keyword">if</span> (newSize &gt; elementCount) &#123;</div><div class="line">        ensureCapacityHelper(newSize);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = newSize ; i &lt; elementCount ; i++) &#123;</div><div class="line">            elementData[i] = <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    elementCount = newSize;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>public Enumeration\<e> elements()</e></strong><br>返回这个vector数据结构的枚举类型表示</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Enumeration&lt;E&gt; <span class="title">elements</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Enumeration&lt;E&gt;() &#123;</div><div class="line">        <span class="keyword">int</span> count = <span class="number">0</span>;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasMoreElements</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> count &lt; elementCount;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> E <span class="title">nextElement</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="comment">// 这个方法的调用仍然会有多线程的问题, 多个线程遍历时,可能不会遍历到所有</span></div><div class="line">            <span class="keyword">synchronized</span> (Vector.<span class="keyword">this</span>) &#123;</div><div class="line">                <span class="keyword">if</span> (count &lt; elementCount) &#123;</div><div class="line">                    <span class="keyword">return</span> elementData(count++);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NoSuchElementException(<span class="string">"Vector Enumeration"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>==public synchronized int indexOf(Object o, int index)==</strong><br>从索引index向后搜索o对象的索引位置，ArrayList中无此方法  </p>
+<p><strong>==public synchronized int lastIndexOf(Object o, int index)==</strong><br>从索引index向前搜索o的索引位置</p>
+<p><strong>public synchronized E elementAt(int index)</strong><br>索引index处的对象，对应ArrayList中的get()方法  </p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/Vector/" data-id="cj7o7n60i000rewaim2a34cda" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/09/17/java/源码学习/util/TreeMap/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

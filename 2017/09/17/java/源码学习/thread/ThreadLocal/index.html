@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="java源码解析-ThreadLocal类ThreadLocal类会维护一些线程的本地副本或者说是变量(严格来说并不是ThreadLocal维护的, 它只是起了一个中间作用)，这些变量(存放在ThreadLocalMap中–是一个Map,键是ThreadLocal)只能够在线程生命周期内被访问，而且也只能是在同一个线程内访问，也就是如果线程A设置了一个变量值，那么就只有线程A能访问到这个变量值，其">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/源码学习/thread/ThreadLocal/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="java源码解析-ThreadLocal类ThreadLocal类会维护一些线程的本地副本或者说是变量(严格来说并不是ThreadLocal维护的, 它只是起了一个中间作用)，这些变量(存放在ThreadLocalMap中–是一个Map,键是ThreadLocal)只能够在线程生命周期内被访问，而且也只能是在同一个线程内访问，也就是如果线程A设置了一个变量值，那么就只有线程A能访问到这个变量值，其">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.897Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="java源码解析-ThreadLocal类ThreadLocal类会维护一些线程的本地副本或者说是变量(严格来说并不是ThreadLocal维护的, 它只是起了一个中间作用)，这些变量(存放在ThreadLocalMap中–是一个Map,键是ThreadLocal)只能够在线程生命周期内被访问，而且也只能是在同一个线程内访问，也就是如果线程A设置了一个变量值，那么就只有线程A能访问到这个变量值，其">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/源码学习/thread/ThreadLocal" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/thread/ThreadLocal/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.456Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-ThreadLocal类"><a href="#java源码解析-ThreadLocal类" class="headerlink" title="java源码解析-ThreadLocal类"></a>java源码解析-ThreadLocal类</h2><p>ThreadLocal类会维护一些线程的本地副本或者说是变量(严格来说并不是ThreadLocal维护的, 它只是起了一个中间作用)，这些变量(存放在ThreadLocalMap中–是一个Map,键是ThreadLocal)只能够在线程生命周期内被访问，而且也只能是在同一个线程内访问，也就是如果线程A设置了一个变量值，那么就只有线程A能访问到这个变量值，其他的线程访问不到。在线程终止之后,相应的这些本地变量也会成为垃圾收集器的对象。</p>
+<p>jdk推荐使用ThreadLocal类的方式是：作为类的私有静态成员变量 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*&lt;tt&gt;ThreadLocal&lt;/tt&gt; instances are typically private</span></div><div class="line"><span class="comment"> * static fields in classes that wish to associate state with a thread (e.g.,</span></div><div class="line"><span class="comment"> * a user ID or Transaction ID).*/</span></div></pre></td></tr></table></figure>
+<p>下面我们来看看具体是怎么实现的：</p>
+<p>首先从Thread类中，我们知道Thread维护了一个实例变量ThreadLocal.ThreadLocalMap threadLocals； (注意这里维护的实例变量是ThreadLocal中的ThreadLocalMap类型, 而并不是ThreadLocal类型)，从这个变量线程就可以访问到本地维护的变量。</p>
+<h3 id="核心方法"><a href="#核心方法" class="headerlink" title="核心方法"></a>核心方法</h3><blockquote>
+<p>initialValue()-设置初始值，在调用get()方法时，如果当前线程的threadLocals变量为null,那么get()将会给线程的threadLocals赋值，同时也会给他设置该方法的返回值，并作为get()方法的返回值；在new ThreadLocal()时，应该要重写这个方法，返回自己想要的值。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> T <span class="title">initialValue</span><span class="params">()</span> </span>&#123;</div><div class="line">	<span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>set(T value)-给线程设置本地变量，value是值，键是调用这个方法的ThreadLocal对象</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(T value)</span> </span>&#123;</div><div class="line">        Thread t = Thread.currentThread();     <span class="comment">//获取当前执行线程</span></div><div class="line">        ThreadLocalMap map = getMap(t);    <span class="comment">//获取线程中的实例变量threadLocals</span></div><div class="line">        <span class="keyword">if</span> (map != <span class="keyword">null</span>)       <span class="comment">//  如果线程中的实例变量threadLocals已经创建, 就直接设值, 键是this--也就是调用该方法的ThreadLocal实例</span></div><div class="line">            map.set(<span class="keyword">this</span>, value);</div><div class="line">        <span class="keyword">else</span>                         <span class="comment">//  如果线程中的实例变量threadLocals还没有被创建, 则用t, value创建一个</span></div><div class="line">            createMap(t, value);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//那下面我们就看一下getMap(t)和createMap()方法的实现:</span></div><div class="line">    <span class="comment">//getMap(thread):  返回当前线程的threadLocals, 要注意的是threadLocals是ThreadLocalMap的实例,并不是ThreadLocal的实例, 千万不要被这个名字给忽悠了,我就是被这个名字忽悠了,搞得第一次没看懂</span></div><div class="line">    <span class="function">ThreadLocalMap <span class="title">getMap</span><span class="params">(Thread t)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> t.threadLocals;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//createMap():  给当前线程的threadLocals变量赋值</span></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">createMap</span><span class="params">(Thread t, T firstValue)</span> </span>&#123;</div><div class="line">        t.threadLocals = <span class="keyword">new</span> ThreadLocalMap(<span class="keyword">this</span>, firstValue);  <span class="comment">//  创建新的ThreadLocalMap实例, 这是在一个线程中第一次调用(所有ThreadLocal实例的总的第一次调用)ThreadLocal的get()时访问</span></div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>get()-获取通过set()方法设置的value值</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span> </span>&#123;</div><div class="line">       Thread t = Thread.currentThread();</div><div class="line">       ThreadLocalMap map = getMap(t);</div><div class="line">       <span class="keyword">if</span> (map != <span class="keyword">null</span>) &#123;</div><div class="line">           ThreadLocalMap.Entry e = map.getEntry(<span class="keyword">this</span>);      <span class="comment">//  获取当前threadLocal实例对应的Entry</span></div><div class="line">           <span class="keyword">if</span> (e != <span class="keyword">null</span>)</div><div class="line">               <span class="keyword">return</span> (T)e.value;</div><div class="line">       &#125;</div><div class="line">       <span class="keyword">return</span> setInitialValue();     <span class="comment">//  如果map为空(说明线程中的threadLocals还没被创建,或者是还没设置值),则调用这个方法</span></div><div class="line">   &#125;</div><div class="line">   <span class="comment">//下面看看setInitialValue()做了些什么:</span></div><div class="line">   <span class="function"><span class="keyword">private</span> T <span class="title">setInitialValue</span><span class="params">()</span> </span>&#123;</div><div class="line">       T value = initialValue();   <span class="comment">//  取得初始值</span></div><div class="line">       Thread t = Thread.currentThread();   <span class="comment">// 获取线程</span></div><div class="line">       ThreadLocalMap map = getMap(t);  <span class="comment">// 获取线程threadLocals</span></div><div class="line">       <span class="keyword">if</span> (map != <span class="keyword">null</span>)   </div><div class="line">           map.set(<span class="keyword">this</span>, value);    <span class="comment">//  设置值</span></div><div class="line">       <span class="keyword">else</span></div><div class="line">           createMap(t, value);   <span class="comment">//  创建threadLocals</span></div><div class="line">       <span class="keyword">return</span> value;   <span class="comment">//返回初始值</span></div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<p>下面我们来看一下用于存储线程本地变量值的ThreadLocalMap类：它的实现主要是通过维护一个Entry[]数组来实现的，Entry跟HashMap中的Entry类似，也是一个键值对存储，键是ThreadLocal实例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&gt; </span>&#123;</div><div class="line">  <span class="comment">/** The value associated with this ThreadLocal. */</span></div><div class="line">  Object value;</div><div class="line"></div><div class="line">  Entry(ThreadLocal k, Object v) &#123;</div><div class="line">    <span class="keyword">super</span>(k);</div><div class="line">    value = v;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ThreadLocalMap类的成员变量：</p>
+<p>private static final int INITIAL_CAPACITY = 16; // 初始容量</p>
+<p>private Entry[] table;  //存储值的数组对象, 在构造函数中初始化, 事先我一直没想明白为什么要用一个数组来存储,因为在我当时的思维里,总是想着只有一个threadLocal实例时的情况, 如果只有一个threadLocal实例,完全是没必要弄一个数组来存储的,后来想通了, 就是如果有多个ThreadLocal类的实例,并且在线程执行期间,这多个实例多调用了set()方法,那么这个数组就可以理解,从而我们可以知道table的真是大小是跟线程执行过程中多个ThreadLocal实例调用set()方法的次数(如果同一个实例多次调用set()方法只会加1,因为会替换)</p>
+<p>private int size = 0;  // table中存放的实际数</p>
+<p>private int threshold;  // 扩容标识</p>
+<p>构造方法:</p>
+<p>ThreadLocalMap(t, value): 用ThreadLocal实例和value值构建一个ThreadLocalMap</p>
+<p>ThreadLocalMap(ThreadLocal firstKey, Object firstValue) {</p>
+<pre><code>    table = new Entry[INITIAL_CAPACITY];   // 初始化
+
+    int i = firstKey.threadLocalHashCode &amp; (INITIAL_CAPACITY - 1);   // 下标索引
+
+    table[i] = new Entry(firstKey, firstValue);   // 创建Entry
+
+    size = 1;
+
+    setThreshold(INITIAL_CAPACITY);
+
+}
+</code></pre><p>ThreadLocalMap(ThreadLocalMap parentMap): 用一个ThreadLocalMap来构建一个ThreadLocalMap</p>
+<p>方法:</p>
+<p>set(ThreadLocal key, Object value):  设置插入键值对, </p>
+<p>Entry getEntry(ThreadLocal key):  获取Entry, 根据ThreadLocal计算出索引,将索引处的Entry返回</p>
+<p>private Entry getEntry(ThreadLocal key) {</p>
+<pre><code>int i = key.threadLocalHashCode &amp; (table.length - 1);
+
+Entry e = table[i];
+
+if (e != null &amp;&amp; e.get() == key)
+
+    return e;
+
+else
+
+    return getEntryAfterMiss(key, i, e);     //  根据索引值没找到时的处理策略, 这是在插入值时发生hash碰撞会发生的情况
+</code></pre><p>}</p>
+<p><a href="http://qifuguang.me/2015/09/02/[Java%E5%B9%B6%E5%8F%91%E5%8C%85%E5%AD%A6%E4%B9%A0%E4%B8%83]%E8%A7%A3%E5%AF%86ThreadLocal/" target="_blank" rel="external">参考</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/thread/ThreadLocal/" data-id="cj7o7n5zx000hewai08ln6o5m" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/源码学习/util/HashMap/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/java/源码学习/thread/Thread/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

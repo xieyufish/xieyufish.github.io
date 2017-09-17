@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/page/2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-java/源码学习/thread/ThreadLocal" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/thread/ThreadLocal/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.456Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-ThreadLocal类"><a href="#java源码解析-ThreadLocal类" class="headerlink" title="java源码解析-ThreadLocal类"></a>java源码解析-ThreadLocal类</h2><p>ThreadLocal类会维护一些线程的本地副本或者说是变量(严格来说并不是ThreadLocal维护的, 它只是起了一个中间作用)，这些变量(存放在ThreadLocalMap中–是一个Map,键是ThreadLocal)只能够在线程生命周期内被访问，而且也只能是在同一个线程内访问，也就是如果线程A设置了一个变量值，那么就只有线程A能访问到这个变量值，其他的线程访问不到。在线程终止之后,相应的这些本地变量也会成为垃圾收集器的对象。</p>
+<p>jdk推荐使用ThreadLocal类的方式是：作为类的私有静态成员变量 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*&lt;tt&gt;ThreadLocal&lt;/tt&gt; instances are typically private</span></div><div class="line"><span class="comment"> * static fields in classes that wish to associate state with a thread (e.g.,</span></div><div class="line"><span class="comment"> * a user ID or Transaction ID).*/</span></div></pre></td></tr></table></figure>
+<p>下面我们来看看具体是怎么实现的：</p>
+<p>首先从Thread类中，我们知道Thread维护了一个实例变量ThreadLocal.ThreadLocalMap threadLocals； (注意这里维护的实例变量是ThreadLocal中的ThreadLocalMap类型, 而并不是ThreadLocal类型)，从这个变量线程就可以访问到本地维护的变量。</p>
+<h3 id="核心方法"><a href="#核心方法" class="headerlink" title="核心方法"></a>核心方法</h3><blockquote>
+<p>initialValue()-设置初始值，在调用get()方法时，如果当前线程的threadLocals变量为null,那么get()将会给线程的threadLocals赋值，同时也会给他设置该方法的返回值，并作为get()方法的返回值；在new ThreadLocal()时，应该要重写这个方法，返回自己想要的值。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">protected</span> T <span class="title">initialValue</span><span class="params">()</span> </span>&#123;</div><div class="line">	<span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>set(T value)-给线程设置本地变量，value是值，键是调用这个方法的ThreadLocal对象</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(T value)</span> </span>&#123;</div><div class="line">        Thread t = Thread.currentThread();     <span class="comment">//获取当前执行线程</span></div><div class="line">        ThreadLocalMap map = getMap(t);    <span class="comment">//获取线程中的实例变量threadLocals</span></div><div class="line">        <span class="keyword">if</span> (map != <span class="keyword">null</span>)       <span class="comment">//  如果线程中的实例变量threadLocals已经创建, 就直接设值, 键是this--也就是调用该方法的ThreadLocal实例</span></div><div class="line">            map.set(<span class="keyword">this</span>, value);</div><div class="line">        <span class="keyword">else</span>                         <span class="comment">//  如果线程中的实例变量threadLocals还没有被创建, 则用t, value创建一个</span></div><div class="line">            createMap(t, value);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//那下面我们就看一下getMap(t)和createMap()方法的实现:</span></div><div class="line">    <span class="comment">//getMap(thread):  返回当前线程的threadLocals, 要注意的是threadLocals是ThreadLocalMap的实例,并不是ThreadLocal的实例, 千万不要被这个名字给忽悠了,我就是被这个名字忽悠了,搞得第一次没看懂</span></div><div class="line">    <span class="function">ThreadLocalMap <span class="title">getMap</span><span class="params">(Thread t)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> t.threadLocals;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">//createMap():  给当前线程的threadLocals变量赋值</span></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">createMap</span><span class="params">(Thread t, T firstValue)</span> </span>&#123;</div><div class="line">        t.threadLocals = <span class="keyword">new</span> ThreadLocalMap(<span class="keyword">this</span>, firstValue);  <span class="comment">//  创建新的ThreadLocalMap实例, 这是在一个线程中第一次调用(所有ThreadLocal实例的总的第一次调用)ThreadLocal的get()时访问</span></div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>get()-获取通过set()方法设置的value值</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span> </span>&#123;</div><div class="line">       Thread t = Thread.currentThread();</div><div class="line">       ThreadLocalMap map = getMap(t);</div><div class="line">       <span class="keyword">if</span> (map != <span class="keyword">null</span>) &#123;</div><div class="line">           ThreadLocalMap.Entry e = map.getEntry(<span class="keyword">this</span>);      <span class="comment">//  获取当前threadLocal实例对应的Entry</span></div><div class="line">           <span class="keyword">if</span> (e != <span class="keyword">null</span>)</div><div class="line">               <span class="keyword">return</span> (T)e.value;</div><div class="line">       &#125;</div><div class="line">       <span class="keyword">return</span> setInitialValue();     <span class="comment">//  如果map为空(说明线程中的threadLocals还没被创建,或者是还没设置值),则调用这个方法</span></div><div class="line">   &#125;</div><div class="line">   <span class="comment">//下面看看setInitialValue()做了些什么:</span></div><div class="line">   <span class="function"><span class="keyword">private</span> T <span class="title">setInitialValue</span><span class="params">()</span> </span>&#123;</div><div class="line">       T value = initialValue();   <span class="comment">//  取得初始值</span></div><div class="line">       Thread t = Thread.currentThread();   <span class="comment">// 获取线程</span></div><div class="line">       ThreadLocalMap map = getMap(t);  <span class="comment">// 获取线程threadLocals</span></div><div class="line">       <span class="keyword">if</span> (map != <span class="keyword">null</span>)   </div><div class="line">           map.set(<span class="keyword">this</span>, value);    <span class="comment">//  设置值</span></div><div class="line">       <span class="keyword">else</span></div><div class="line">           createMap(t, value);   <span class="comment">//  创建threadLocals</span></div><div class="line">       <span class="keyword">return</span> value;   <span class="comment">//返回初始值</span></div><div class="line">   &#125;</div></pre></td></tr></table></figure>
+<p>下面我们来看一下用于存储线程本地变量值的ThreadLocalMap类：它的实现主要是通过维护一个Entry[]数组来实现的，Entry跟HashMap中的Entry类似，也是一个键值对存储，键是ThreadLocal实例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&gt; </span>&#123;</div><div class="line">  <span class="comment">/** The value associated with this ThreadLocal. */</span></div><div class="line">  Object value;</div><div class="line"></div><div class="line">  Entry(ThreadLocal k, Object v) &#123;</div><div class="line">    <span class="keyword">super</span>(k);</div><div class="line">    value = v;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ThreadLocalMap类的成员变量：</p>
+<p>private static final int INITIAL_CAPACITY = 16; // 初始容量</p>
+<p>private Entry[] table;  //存储值的数组对象, 在构造函数中初始化, 事先我一直没想明白为什么要用一个数组来存储,因为在我当时的思维里,总是想着只有一个threadLocal实例时的情况, 如果只有一个threadLocal实例,完全是没必要弄一个数组来存储的,后来想通了, 就是如果有多个ThreadLocal类的实例,并且在线程执行期间,这多个实例多调用了set()方法,那么这个数组就可以理解,从而我们可以知道table的真是大小是跟线程执行过程中多个ThreadLocal实例调用set()方法的次数(如果同一个实例多次调用set()方法只会加1,因为会替换)</p>
+<p>private int size = 0;  // table中存放的实际数</p>
+<p>private int threshold;  // 扩容标识</p>
+<p>构造方法:</p>
+<p>ThreadLocalMap(t, value): 用ThreadLocal实例和value值构建一个ThreadLocalMap</p>
+<p>ThreadLocalMap(ThreadLocal firstKey, Object firstValue) {</p>
+<pre><code>    table = new Entry[INITIAL_CAPACITY];   // 初始化
+
+    int i = firstKey.threadLocalHashCode &amp; (INITIAL_CAPACITY - 1);   // 下标索引
+
+    table[i] = new Entry(firstKey, firstValue);   // 创建Entry
+
+    size = 1;
+
+    setThreshold(INITIAL_CAPACITY);
+
+}
+</code></pre><p>ThreadLocalMap(ThreadLocalMap parentMap): 用一个ThreadLocalMap来构建一个ThreadLocalMap</p>
+<p>方法:</p>
+<p>set(ThreadLocal key, Object value):  设置插入键值对, </p>
+<p>Entry getEntry(ThreadLocal key):  获取Entry, 根据ThreadLocal计算出索引,将索引处的Entry返回</p>
+<p>private Entry getEntry(ThreadLocal key) {</p>
+<pre><code>int i = key.threadLocalHashCode &amp; (table.length - 1);
+
+Entry e = table[i];
+
+if (e != null &amp;&amp; e.get() == key)
+
+    return e;
+
+else
+
+    return getEntryAfterMiss(key, i, e);     //  根据索引值没找到时的处理策略, 这是在插入值时发生hash碰撞会发生的情况
+</code></pre><p>}</p>
+<p><a href="http://qifuguang.me/2015/09/02/[Java%E5%B9%B6%E5%8F%91%E5%8C%85%E5%AD%A6%E4%B9%A0%E4%B8%83]%E8%A7%A3%E5%AF%86ThreadLocal/" target="_blank" rel="external">参考</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/thread/ThreadLocal/" data-id="cj7o7n5zx000hewai08ln6o5m" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/thread/Thread" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/thread/Thread/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.452Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-Thread类"><a href="#java源码解析-Thread类" class="headerlink" title="java源码解析-Thread类"></a>java源码解析-Thread类</h2><p><strong>Thread：</strong>java中的线程类, 实现了Runnable接口(只有一个run()方法)。在java中创建一个线程的方式有：可以new一个Thread或者继承Thread或者实现Runnable接口(并传递给Thread对象)。</p>
+<p>Thread类中定义了线程的优先级分为十个等级，从1到10，默认新建线程的优先级为5。源码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* The minimum priority that a thread can have.</span></div><div class="line"><span class="comment">*/</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span> MIN_PRIORITY = <span class="number">1</span>;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* The default priority that is assigned to a thread.</span></div><div class="line"><span class="comment">*/</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span> NORM_PRIORITY = <span class="number">5</span>;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* The maximum priority that a thread can have.</span></div><div class="line"><span class="comment">*/</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">int</span> MAX_PRIORITY = <span class="number">10</span>;</div></pre></td></tr></table></figure>
+<p>在Thread中包含有一个Runnable类型的实例变量target，Thread线程启动执行时，就是运行的target中run方法里面的内容。</p>
+<h3 id="核心方法"><a href="#核心方法" class="headerlink" title="核心方法"></a>核心方法</h3><blockquote>
+<p>init方法，初始化一个线程，在new Thread()的时候，会调用</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ThreadGroup g, Runnable target, String name,</span></span></div><div class="line"><span class="function"><span class="params">                  <span class="keyword">long</span> stackSize)</span> </span>&#123;</div><div class="line">  init(g, target, name, stackSize, <span class="keyword">null</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ThreadGroup g, Runnable target, String name,</span></span></div><div class="line"><span class="function"><span class="params">                      <span class="keyword">long</span> stackSize, AccessControlContext acc)</span> </span>&#123;</div><div class="line">      <span class="comment">// 线程的名字不能为空, 如果在new的时候没有传入线程名字name, 那么将使用"Thread-" + nextThreadNum() --- Thread中的同步静态方法,实现递增  这种方式命名</span></div><div class="line">        <span class="keyword">if</span> (name == <span class="keyword">null</span>) &#123;       </div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"name cannot be null"</span>);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">this</span>.name = name.toCharArray(); <span class="comment">//设置线程名字</span></div><div class="line">		</div><div class="line">  		<span class="comment">//获取当前正在执行的线程(也就是在执行 new Thread()操作的线程)作为本线程的父线程</span></div><div class="line">        Thread parent = currentThread();      </div><div class="line">        SecurityManager security = System.getSecurityManager();          <span class="comment">//获取系统安全管理器</span></div><div class="line">        <span class="keyword">if</span> (g == <span class="keyword">null</span>) &#123;                      <span class="comment">//如果传进来的线程组对象为空,</span></div><div class="line">            <span class="comment">/* Determine if it's an applet or not */</span></div><div class="line"></div><div class="line">            <span class="comment">/* If there is a security manager, ask the security manager</span></div><div class="line"><span class="comment">               what to do. */</span></div><div class="line">          	<span class="comment">//获取系统安全管理器所在的线程组, 其实就是当前正在执行线程所在的线程组</span></div><div class="line">            <span class="keyword">if</span> (security != <span class="keyword">null</span>) &#123;</div><div class="line">                g = security.getThreadGroup();      <span class="comment">//security.getThreadGroup()的实现代码:  </span></div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">/* If the security doesn't have a strong opinion of the matter</span></div><div class="line"><span class="comment">               use the parent thread group. */</span></div><div class="line">            <span class="keyword">if</span> (g == <span class="keyword">null</span>) &#123;   <span class="comment">//如果安全管理器为空, 那么就跟父线程在同一个线程组</span></div><div class="line">                g = parent.getThreadGroup();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">/* checkAccess regardless of whether or not threadgroup is</span></div><div class="line"><span class="comment">           explicitly passed in. */</span></div><div class="line">        g.checkAccess();</div><div class="line"></div><div class="line">        <span class="comment">/*</span></div><div class="line"><span class="comment">         * Do we have the required permissions?</span></div><div class="line"><span class="comment">         */</span></div><div class="line">        <span class="keyword">if</span> (security != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">if</span> (isCCLOverridden(getClass())) &#123;</div><div class="line">                security.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        g.addUnstarted();          <span class="comment">//线程组中未开始线程数 + 1</span></div><div class="line"></div><div class="line">        <span class="keyword">this</span>.group = g;         <span class="comment">//设置本线程所在线程组</span></div><div class="line">        <span class="keyword">this</span>.daemon = parent.isDaemon();    <span class="comment">//设置本线程是否后台线程, 如果父线程是后台线程那么本线程也是, 也就是说一个线程是否后台线程跟父线程(也就是创建他的线程)有关</span></div><div class="line">        <span class="keyword">this</span>.priority = parent.getPriority();     <span class="comment">//暂时设置本线程的优先级为父线程的优先级, 下面会做修改</span></div><div class="line">        <span class="keyword">if</span> (security == <span class="keyword">null</span> || isCCLOverridden(parent.getClass()))</div><div class="line">            <span class="keyword">this</span>.contextClassLoader = parent.getContextClassLoader();</div><div class="line">        <span class="keyword">else</span></div><div class="line">            <span class="keyword">this</span>.contextClassLoader = parent.contextClassLoader;</div><div class="line">        <span class="keyword">this</span>.inheritedAccessControlContext =</div><div class="line">                acc != <span class="keyword">null</span> ? acc : AccessController.getContext();</div><div class="line">        <span class="keyword">this</span>.target = target;        <span class="comment">//设置本线程的实际执行体, 由调用传入</span></div><div class="line">        setPriority(priority);       <span class="comment">//设置线程优先级, 如果参数priority的值大于所在线程组设置的最大优先级, 那么重新设置本线程优先级为线程组的最大优先级, 否则不变. 也就是说线程的优先级不能大于所在线程组设置的最大优先级</span></div><div class="line">        <span class="keyword">if</span> (parent.inheritableThreadLocals != <span class="keyword">null</span>)</div><div class="line">            <span class="keyword">this</span>.inheritableThreadLocals =</div><div class="line">                ThreadLocal.createInheritedMap(parent.inheritableThreadLocals);</div><div class="line">        <span class="comment">/* Stash the specified stack size in case the VM cares */</span></div><div class="line">        <span class="keyword">this</span>.stackSize = stackSize;      <span class="comment">//线程栈的大小</span></div><div class="line"></div><div class="line">        <span class="comment">/* Set thread ID */</span></div><div class="line">        tid = nextThreadID();     <span class="comment">//线程id</span></div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>start()方法，start方法中实际调用的是本地方法start0</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="comment">/**</span></div><div class="line"><span class="comment">         * This method is not invoked for the main method thread or "system"</span></div><div class="line"><span class="comment">         * group threads created/set up by the VM. Any new functionality added</span></div><div class="line"><span class="comment">         * to this method in the future may have to also be added to the VM.</span></div><div class="line"><span class="comment">         *</span></div><div class="line"><span class="comment">         * A zero status value corresponds to state "NEW".</span></div><div class="line"><span class="comment">         */</span></div><div class="line">  <span class="keyword">if</span> (threadStatus != <span class="number">0</span>)</div><div class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalThreadStateException();</div><div class="line"></div><div class="line">  <span class="comment">/* Notify the group that this thread is about to be started</span></div><div class="line"><span class="comment">         * so that it can be added to the group's list of threads</span></div><div class="line"><span class="comment">         * and the group's unstarted count can be decremented. */</span></div><div class="line">  <span class="comment">//加入到当前线程组中</span></div><div class="line">  group.add(<span class="keyword">this</span>);</div><div class="line"></div><div class="line">  <span class="keyword">boolean</span> started = <span class="keyword">false</span>;</div><div class="line">  <span class="keyword">try</span> &#123;</div><div class="line">    start0();</div><div class="line">    started = <span class="keyword">true</span>;</div><div class="line">  &#125; <span class="keyword">finally</span> &#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">      <span class="keyword">if</span> (!started) &#123;</div><div class="line">        group.threadStartFailed(<span class="keyword">this</span>);        <span class="comment">//  如果线程开始失败, 那么就会从线程组中移除</span></div><div class="line">      &#125;</div><div class="line">    &#125; <span class="keyword">catch</span> (Throwable ignore) &#123;</div><div class="line">      <span class="comment">/* do nothing. If start0 threw a Throwable then</span></div><div class="line"><span class="comment">                  it will be passed up the call stack */</span></div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">start0</span><span class="params">()</span></span>;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>run()方法，实际执行target对象的run()方法</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">if</span> (target != <span class="keyword">null</span>) &#123;</div><div class="line">  	target.run();</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="线程状态"><a href="#线程状态" class="headerlink" title="线程状态"></a>线程状态</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">enum</span> State &#123;</div><div class="line">  <span class="comment">/**</span></div><div class="line"><span class="comment">  * Thread state for a thread which has not yet started.</span></div><div class="line"><span class="comment">  */</span></div><div class="line">  NEW,　　　　<span class="comment">//线程创建还没有开始, 算是就绪状态吧</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line"><span class="comment">    * Thread state for a runnable thread.  A thread in the runnable</span></div><div class="line"><span class="comment">    * state is executing in the Java virtual machine but it may</span></div><div class="line"><span class="comment">    * be waiting for other resources from the operating system</span></div><div class="line"><span class="comment">    * such as processor.</span></div><div class="line"><span class="comment">    */</span></div><div class="line">    RUNNABLE,     <span class="comment">// 运行时状态</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line"><span class="comment">    * Thread state for a thread blocked waiting for a monitor lock.</span></div><div class="line"><span class="comment">    * A thread in the blocked state is waiting for a monitor lock</span></div><div class="line"><span class="comment">    * to enter a synchronized block/method or</span></div><div class="line"><span class="comment">    * reenter a synchronized block/method after calling</span></div><div class="line"><span class="comment">    * &#123;<span class="doctag">@link</span> Object#wait() Object.wait&#125;.</span></div><div class="line"><span class="comment">    */</span></div><div class="line">    BLOCKED,     <span class="comment">//  堵塞</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line"><span class="comment">    * Thread state for a waiting thread.</span></div><div class="line"><span class="comment">    * A thread is in the waiting state due to calling one of the</span></div><div class="line"><span class="comment">    * following methods:</span></div><div class="line"><span class="comment">    * &lt;ul&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> Object#wait() Object.wait&#125; with no timeout&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> #join() Thread.join&#125; with no timeout&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> LockSupport#park() LockSupport.park&#125;&lt;/li&gt;</span></div><div class="line"><span class="comment">    * &lt;/ul&gt;</span></div><div class="line"><span class="comment">    *</span></div><div class="line"><span class="comment">    * &lt;p&gt;A thread in the waiting state is waiting for another thread to</span></div><div class="line"><span class="comment">    * perform a particular action.</span></div><div class="line"><span class="comment">    *</span></div><div class="line"><span class="comment">    * For example, a thread that has called &lt;tt&gt;Object.wait()&lt;/tt&gt;</span></div><div class="line"><span class="comment">    * on an object is waiting for another thread to call</span></div><div class="line"><span class="comment">    * &lt;tt&gt;Object.notify()&lt;/tt&gt; or &lt;tt&gt;Object.notifyAll()&lt;/tt&gt; on</span></div><div class="line"><span class="comment">    * that object. A thread that has called &lt;tt&gt;Thread.join()&lt;/tt&gt;</span></div><div class="line"><span class="comment">    * is waiting for a specified thread to terminate.</span></div><div class="line"><span class="comment">    */</span></div><div class="line">    WAITING,   <span class="comment">// 等待</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line"><span class="comment">    * Thread state for a waiting thread with a specified waiting time.</span></div><div class="line"><span class="comment">    * A thread is in the timed waiting state due to calling one of</span></div><div class="line"><span class="comment">    * the following methods with a specified positive waiting time:</span></div><div class="line"><span class="comment">    * &lt;ul&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> #sleep Thread.sleep&#125;&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> Object#wait(long) Object.wait&#125; with timeout&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> #join(long) Thread.join&#125; with timeout&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> LockSupport#parkNanos LockSupport.parkNanos&#125;&lt;/li&gt;</span></div><div class="line"><span class="comment">    *   &lt;li&gt;&#123;<span class="doctag">@link</span> LockSupport#parkUntil LockSupport.parkUntil&#125;&lt;/li&gt;</span></div><div class="line"><span class="comment">    * &lt;/ul&gt;</span></div><div class="line"><span class="comment">    */</span></div><div class="line">    TIMED_WAITING,   <span class="comment">//有时间限制的等待</span></div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line"><span class="comment">    * Thread state for a terminated thread.</span></div><div class="line"><span class="comment">    * The thread has completed execution.</span></div><div class="line"><span class="comment">    */</span></div><div class="line">    TERMINATED;   <span class="comment">//终止</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/thread/Thread/" data-id="cj7o7n603000iewai0sret351" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/thread/FutureTask" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/thread/FutureTask/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.446Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-FutureTask类"><a href="#java源码解析-FutureTask类" class="headerlink" title="java源码解析-FutureTask类"></a>java源码解析-FutureTask类</h2><p><strong>FutureTask</strong>是从jdk5之后创建的属于java.util.concurrent包下的一个类。</p>
+<p><strong>FutureTask：</strong> 一个可取消执行的异步任务类。这个类提供了Future接口的基本实现，能够开始和取消执行异步任务，也可以查看执行任务是否完成，检索执行结果等。<br>要注意的是: get()方法获取执行结果会阻塞直到任务执行完成，一旦一个任务已经完成就不能再次开始和结束(除非执行时通过runAndReset()方法).</p>
+<h3 id="类定义"><a href="#类定义" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* FutureTask实现的是RunnableFuture接口, 而RunnableFuture接口是继承自Runnable和Future两个接口的.</span></div><div class="line"><span class="comment">* 所以FutureTask他同时拥有Runnable和Future的特性,这也就意味着他的对象可以传递给线程执行;</span></div><div class="line"><span class="comment">* 同时, jdk中也提供了Executor接口来执行FutureTask(因为Executor也可以执行Runnable对象).</span></div><div class="line"><span class="comment">**/</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FutureTask</span>&lt;<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">RunnableFuture</span>&lt;<span class="title">V</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>private volatile int</td>
+<td>state</td>
+<td>当前异步任务的状态</td>
+</tr>
+<tr>
+<td>private Callable\<v></v></td>
+<td>callable</td>
+<td>任务的执行体,具体要做的事</td>
+</tr>
+<tr>
+<td>private Object</td>
+<td>outcome</td>
+<td>任务的执行结果存储对象(get()方法的返回值)</td>
+</tr>
+<tr>
+<td>private volatile Thread</td>
+<td>runner</td>
+<td>任务的执行线程</td>
+</tr>
+<tr>
+<td>private volatile WaitNode</td>
+<td>waiters</td>
+<td>获取任务结果的等待线程(是一个链式列表)</td>
+</tr>
+<tr>
+<td>private static final int</td>
+<td>NEW = 0</td>
+<td>任务初始化状态</td>
+</tr>
+<tr>
+<td>private static final int</td>
+<td>COMPLETING = 1</td>
+<td>任务正在完成状态(任务已经执行完成,但是结果还没有赋值给outcome)</td>
+</tr>
+<tr>
+<td>private static final int</td>
+<td>NORMAL = 2</td>
+<td>任务完成(结果已经赋值给outcome)</td>
+</tr>
+<tr>
+<td>private static final int</td>
+<td>EXCEPTIONAL = 3</td>
+<td>任务执行异常</td>
+</tr>
+<tr>
+<td>private static final int</td>
+<td>CANCELLED = 4</td>
+<td>任务被取消</td>
+</tr>
+<tr>
+<td>private static final int</td>
+<td>INTERRUPTING = 5</td>
+<td>任务被中断中</td>
+</tr>
+<tr>
+<td>private static final int</td>
+<td>INTERRUPTED  = 6</td>
+<td>任务被中断</td>
+</tr>
+</tbody>
+</table>
+<p>WaitNode的定义：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">WaitNode</span> </span>&#123;</div><div class="line">    <span class="keyword">volatile</span> Thread thread;</div><div class="line">    <span class="keyword">volatile</span> WaitNode next;</div><div class="line">    WaitNode() &#123; thread = Thread.currentThread(); &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>异步任务可能的状态之间的转换：</p>
+<blockquote>
+<p>NEW -&gt; COMPLETING -&gt; NORMAL<br>NEW -&gt; COMPLETING -&gt; EXCEPTIONAL<br>NEW -&gt; CANCELLED<br>NEW -&gt; INTERRUPTING -&gt; INTERRUPTED</p>
+</blockquote>
+<h3 id="构造方式"><a href="#构造方式" class="headerlink" title="构造方式"></a>构造方式</h3><blockquote>
+<p>通过传入Callable来构造一个任务  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">FutureTask</span><span class="params">(Callable&lt;V&gt; callable)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (callable == <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</div><div class="line">    <span class="keyword">this</span>.callable = callable;</div><div class="line">    <span class="keyword">this</span>.state = NEW;       <span class="comment">// ensure visibility of callable</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>通过传入Runnable来构造一个任务</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">FutureTask</span><span class="params">(Runnable runnable, V result)</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>.callable = Executors.callable(runnable, result);  <span class="comment">// 将Runnable转换成Callable对象</span></div><div class="line">    <span class="keyword">this</span>.state = NEW;       <span class="comment">// ensure visibility of callable</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>在使用这个类是需要注意的是： 因为是一个异步执行任务，所以我们要理解这个异步的意义，异步也就意味着任务的执行和结果的获得是会在不同的线程中操作的，可能一个线程在执行任务，而有一个或者多个线程会等待着获取结果。</p>
+<h4 id="任务的执行部分"><a href="#任务的执行部分" class="headerlink" title="任务的执行部分"></a>任务的执行部分</h4><blockquote>
+<p>执行一个任务-run()方法, 会被线程自动调用执行</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="comment">// 判断任务的状态是否是初始化状态</span></div><div class="line">    <span class="comment">// 判断执行任务的线程对象runner是否为空,为空就将当前执行线程赋值给runner属性</span></div><div class="line">    <span class="comment">// 不为空说明已经有线程准备执行这个任务了</span></div><div class="line">    <span class="keyword">if</span> (state != NEW ||</div><div class="line">        !UNSAFE.compareAndSwapObject(<span class="keyword">this</span>, runnerOffset,</div><div class="line">                                     <span class="keyword">null</span>, Thread.currentThread()))</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        Callable&lt;V&gt; c = callable;</div><div class="line">        <span class="comment">// 任务状态是NEW, 并且callable不为空(在任务被cancel()时,callable会被置空)则执行任务</span></div><div class="line">        <span class="keyword">if</span> (c != <span class="keyword">null</span> &amp;&amp; state == NEW) &#123;</div><div class="line">            V result;  <span class="comment">// 临时存储任务结果</span></div><div class="line">            <span class="keyword">boolean</span> ran;  <span class="comment">// 任务是否执行完毕</span></div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                result = c.call();  <span class="comment">// 执行任务,返回结果</span></div><div class="line">                ran = <span class="keyword">true</span>;  </div><div class="line">            &#125; <span class="keyword">catch</span> (Throwable ex) &#123; <span class="comment">// 任务执行异常</span></div><div class="line">                result = <span class="keyword">null</span>;  </div><div class="line">                ran = <span class="keyword">false</span>;</div><div class="line">                setException(ex);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (ran)  <span class="comment">// 任务执行完毕就设置结果</span></div><div class="line">                set(result);</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">finally</span> &#123;</div><div class="line">        <span class="comment">// runner must be non-null until state is settled to</span></div><div class="line">        <span class="comment">// prevent concurrent calls to run()</span></div><div class="line">        runner = <span class="keyword">null</span>;  <span class="comment">// 将执行任务的执行线程置空</span></div><div class="line">        <span class="comment">// state must be re-read after nulling runner to prevent</span></div><div class="line">        <span class="comment">// leaked interrupts</span></div><div class="line">        <span class="keyword">int</span> s = state; <span class="comment">// 判断线程状态</span></div><div class="line">        <span class="keyword">if</span> (s &gt;= INTERRUPTING)</div><div class="line">            handlePossibleCancellationInterrupt(s);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* 执行结果的赋值操作, 子类可重写</span></div><div class="line"><span class="comment">**/</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(V v)</span> </span>&#123;</div><div class="line">    <span class="comment">// 首先将任务的状态改变</span></div><div class="line">    <span class="comment">// 状态改变成功之后再将结果赋值</span></div><div class="line">    <span class="comment">// 赋值成功,改变任务的状态</span></div><div class="line">    <span class="comment">// 处理等待线程队列(将线程阻塞状态改为唤醒,这样哪些等待获取结果的线程就可以取得任务结果)</span></div><div class="line">    <span class="keyword">if</span> (UNSAFE.compareAndSwapInt(<span class="keyword">this</span>, stateOffset, NEW, COMPLETING)) &#123;</div><div class="line">        outcome = v;</div><div class="line">        UNSAFE.putOrderedInt(<span class="keyword">this</span>, stateOffset, NORMAL); <span class="comment">// final state</span></div><div class="line">        finishCompletion();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* 任务执行出现异常的处理方式, 子类可重写</span></div><div class="line"><span class="comment">**/</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">setException</span><span class="params">(Throwable t)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (UNSAFE.compareAndSwapInt(<span class="keyword">this</span>, stateOffset, NEW, COMPLETING)) &#123;</div><div class="line">        outcome = t;</div><div class="line">        UNSAFE.putOrderedInt(<span class="keyword">this</span>, stateOffset, EXCEPTIONAL); <span class="comment">// final state</span></div><div class="line">        finishCompletion();</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* 在任务执行完成(包括取消、正常结束、发生异常), 将等待线程列表唤醒</span></div><div class="line"><span class="comment">* 同时让任务执行体置空</span></div><div class="line"><span class="comment">**/</span></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">finishCompletion</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="comment">// assert state &gt; COMPLETING;</span></div><div class="line">    <span class="keyword">for</span> (WaitNode q; (q = waiters) != <span class="keyword">null</span>;) &#123;</div><div class="line">        <span class="keyword">if</span> (UNSAFE.compareAndSwapObject(<span class="keyword">this</span>, waitersOffset, q, <span class="keyword">null</span>)) &#123;</div><div class="line">            <span class="keyword">for</span> (;;) &#123;</div><div class="line">                Thread t = q.thread;</div><div class="line">                <span class="keyword">if</span> (t != <span class="keyword">null</span>) &#123;</div><div class="line">                    q.thread = <span class="keyword">null</span>;</div><div class="line">                    LockSupport.unpark(t);</div><div class="line">                &#125;</div><div class="line">                WaitNode next = q.next;</div><div class="line">                <span class="keyword">if</span> (next == <span class="keyword">null</span>)</div><div class="line">                    <span class="keyword">break</span>;</div><div class="line">                q.next = <span class="keyword">null</span>; <span class="comment">// unlink to help gc</span></div><div class="line">                q = next;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    done();  <span class="comment">// 这里可以自定义实现任务完成后要做的事(在子类中重写done()方法)</span></div><div class="line"></div><div class="line">    callable = <span class="keyword">null</span>;        <span class="comment">// to reduce footprint</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>任务可被多次执行- runAndReset()方法</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* 可被子类重写</span></div><div class="line"><span class="comment">* 这个方法同run()方法的区别在于这个方法不会设置任务的执行结果值,而只是执行任务完之后,将任务的状态重新设置为初始化的可被执行状态.</span></div><div class="line"><span class="comment">**/</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">runAndReset</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (state != NEW ||</div><div class="line">        !UNSAFE.compareAndSwapObject(<span class="keyword">this</span>, runnerOffset,</div><div class="line">                                     <span class="keyword">null</span>, Thread.currentThread()))</div><div class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">boolean</span> ran = <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">int</span> s = state;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        Callable&lt;V&gt; c = callable;</div><div class="line">        <span class="keyword">if</span> (c != <span class="keyword">null</span> &amp;&amp; s == NEW) &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                c.call(); <span class="comment">// don't set result</span></div><div class="line">                ran = <span class="keyword">true</span>;</div><div class="line">            &#125; <span class="keyword">catch</span> (Throwable ex) &#123;</div><div class="line">                setException(ex);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">finally</span> &#123;</div><div class="line">        <span class="comment">// runner must be non-null until state is settled to</span></div><div class="line">        <span class="comment">// prevent concurrent calls to run()</span></div><div class="line">        runner = <span class="keyword">null</span>;</div><div class="line">        <span class="comment">// state must be re-read after nulling runner to prevent</span></div><div class="line">        <span class="comment">// leaked interrupts</span></div><div class="line">        s = state;</div><div class="line">        <span class="keyword">if</span> (s &gt;= INTERRUPTING)</div><div class="line">            handlePossibleCancellationInterrupt(s);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> ran &amp;&amp; s == NEW;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="任务的取消"><a href="#任务的取消" class="headerlink" title="任务的取消"></a>任务的取消</h4><blockquote>
+<p>只能取消还没被执行的任务(任务状态为NEW的任务)- cancel(boolean)</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">cancel</span><span class="params">(<span class="keyword">boolean</span> mayInterruptIfRunning)</span> </span>&#123;</div><div class="line">    <span class="comment">// 如果任务状态不是初始化状态,则取消任务</span></div><div class="line">    <span class="comment">// (此时可能任务已经在执行了,并且可能已经执行完成,</span></div><div class="line">    <span class="comment">// 但是状态改变还没来得急改, 也就是在run()方法中的set()方法还没来得急调用)</span></div><div class="line">    <span class="keyword">if</span> (state != NEW)</div><div class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">    <span class="keyword">if</span> (mayInterruptIfRunning) &#123;</div><div class="line">        <span class="comment">// 继续判断任务的当前状态是否为NEW,因为此时执行任务线程可能再度获得处理了,任务状态可能已发生改变</span></div><div class="line">        <span class="keyword">if</span> (!UNSAFE.compareAndSwapInt(<span class="keyword">this</span>, stateOffset, NEW, INTERRUPTING))</div><div class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">        <span class="comment">// 如果任务状态依然是NEW, 也就是执行线程没有改变任务的状态, </span></div><div class="line">        <span class="comment">// 则让执行线程中断(在这个过程中执行线程可能会改变任务的状态)</span></div><div class="line">        Thread t = runner;</div><div class="line">        <span class="keyword">if</span> (t != <span class="keyword">null</span>)</div><div class="line">            t.interrupt();</div><div class="line">        <span class="comment">// 将任务状态改变为中断</span></div><div class="line">        UNSAFE.putOrderedInt(<span class="keyword">this</span>, stateOffset, INTERRUPTED); <span class="comment">// final state</span></div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (!UNSAFE.compareAndSwapInt(<span class="keyword">this</span>, stateOffset, NEW, CANCELLED))</div><div class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">    finishCompletion();  <span class="comment">// 处理任务完成的结果</span></div><div class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="获取任务结果"><a href="#获取任务结果" class="headerlink" title="获取任务结果"></a>获取任务结果</h4><blockquote>
+<p>获取任务的执行结果-get()方法和get(long,TimeUnit)方法, 核心在于内部调用的awaitDone()方法</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException, ExecutionException </span>&#123;</div><div class="line">    <span class="keyword">int</span> s = state;</div><div class="line">    <span class="keyword">if</span> (s &lt;= COMPLETING)</div><div class="line">        s = awaitDone(<span class="keyword">false</span>, <span class="number">0L</span>);</div><div class="line">    <span class="keyword">return</span> report(s);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(<span class="keyword">long</span> timeout, TimeUnit unit)</span></span></div><div class="line"><span class="function">    <span class="keyword">throws</span> InterruptedException, ExecutionException, TimeoutException </span>&#123;</div><div class="line">    <span class="keyword">if</span> (unit == <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</div><div class="line">    <span class="keyword">int</span> s = state;</div><div class="line">    <span class="keyword">if</span> (s &lt;= COMPLETING &amp;&amp;</div><div class="line">        (s = awaitDone(<span class="keyword">true</span>, unit.toNanos(timeout))) &lt;= COMPLETING)</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> TimeoutException();</div><div class="line">    <span class="keyword">return</span> report(s);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> V <span class="title">report</span><span class="params">(<span class="keyword">int</span> s)</span> <span class="keyword">throws</span> ExecutionException </span>&#123;</div><div class="line">    Object x = outcome;</div><div class="line">    <span class="keyword">if</span> (s == NORMAL)  <span class="comment">// 如果任务正常执行完,返回结果</span></div><div class="line">        <span class="keyword">return</span> (V)x;</div><div class="line">    <span class="keyword">if</span> (s &gt;= CANCELLED)  <span class="comment">// 抛出取消异常</span></div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> CancellationException();</div><div class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> ExecutionException((Throwable)x);  <span class="comment">// 其他情况抛出执行异常</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* 等待任务的执行结果</span></div><div class="line"><span class="comment">* timed: 是否有时间限制  nanos: 限制的时间</span></div><div class="line"><span class="comment">**/</span> </div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">awaitDone</span><span class="params">(<span class="keyword">boolean</span> timed, <span class="keyword">long</span> nanos)</span></span></div><div class="line"><span class="function">    <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">    <span class="comment">// 计算限制的时间范围</span></div><div class="line">    <span class="keyword">final</span> <span class="keyword">long</span> deadline = timed ? System.nanoTime() + nanos : <span class="number">0L</span>;</div><div class="line">    <span class="comment">// 当前等待线程节点</span></div><div class="line">    WaitNode q = <span class="keyword">null</span>;</div><div class="line">    <span class="comment">// 是否将节点放在了等待列表中</span></div><div class="line">    <span class="keyword">boolean</span> queued = <span class="keyword">false</span>;</div><div class="line">    <span class="comment">// 无限循环来实现线程阻塞等待</span></div><div class="line">    <span class="keyword">for</span> (;;) &#123;</div><div class="line">        <span class="comment">// 判断当前线程是否被中断</span></div><div class="line">        <span class="keyword">if</span> (Thread.interrupted()) &#123;</div><div class="line">            removeWaiter(q);</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> InterruptedException();</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="keyword">int</span> s = state;</div><div class="line">        <span class="comment">/**</span></div><div class="line"><span class="comment">        * 1. 首先判断任务状态是否是完成状态, 是就直接返回结果</span></div><div class="line"><span class="comment">        * 2. 如果1为false,并且任务的状态是COMPLETING, 也就是在set()任务结果时被阻塞了,则让出当前线程cpu资源</span></div><div class="line"><span class="comment">        * 3. 如果前两步false,并且q==null,则初始化一个当前线程的等待节点</span></div><div class="line"><span class="comment">        * 4. 下一次循环体, 如果前3步依然是false,并且当前节点没有加入到等待列表,</span></div><div class="line"><span class="comment">        *     则将当前线程节点放在等待列表的第一个位置</span></div><div class="line"><span class="comment">        * 5. 在下一次循环, 如果前4步为false, 如果是时间范围内等待的,则判断当前时间是否过期,</span></div><div class="line"><span class="comment">        *    过期则将线程节点移出等待队列并返回任务状态结果, 如果没过期,则让当前线程阻塞一定时间</span></div><div class="line"><span class="comment">        * 6. 如果不是时间范围内等待, 并且前5步均为false,则让线程阻塞,直到被唤醒</span></div><div class="line"><span class="comment">        **/</span></div><div class="line">        <span class="keyword">if</span> (s &gt; COMPLETING) &#123;</div><div class="line">            <span class="keyword">if</span> (q != <span class="keyword">null</span>)</div><div class="line">                q.thread = <span class="keyword">null</span>;</div><div class="line">            <span class="keyword">return</span> s;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (s == COMPLETING) <span class="comment">// cannot time out yet</span></div><div class="line">            Thread.yield();</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (q == <span class="keyword">null</span>)</div><div class="line">            q = <span class="keyword">new</span> WaitNode();</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (!queued)</div><div class="line">            queued = UNSAFE.compareAndSwapObject(<span class="keyword">this</span>, waitersOffset,</div><div class="line">                                                 q.next = waiters, q);</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (timed) &#123;</div><div class="line">            nanos = deadline - System.nanoTime();</div><div class="line">            <span class="keyword">if</span> (nanos &lt;= <span class="number">0L</span>) &#123;</div><div class="line">                removeWaiter(q);</div><div class="line">                <span class="keyword">return</span> state;</div><div class="line">            &#125;</div><div class="line">            LockSupport.parkNanos(<span class="keyword">this</span>, nanos);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">else</span></div><div class="line">            LockSupport.park(<span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* 将线程节点从等待队列中移出</span></div><div class="line"><span class="comment">**/</span></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">removeWaiter</span><span class="params">(WaitNode node)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (node != <span class="keyword">null</span>) &#123;</div><div class="line">        node.thread = <span class="keyword">null</span>;</div><div class="line">        retry:</div><div class="line">        <span class="keyword">for</span> (;;) &#123;          <span class="comment">// restart on removeWaiter race</span></div><div class="line">            <span class="keyword">for</span> (WaitNode pred = <span class="keyword">null</span>, q = waiters, s; q != <span class="keyword">null</span>; q = s) &#123;</div><div class="line">                s = q.next;</div><div class="line">                <span class="keyword">if</span> (q.thread != <span class="keyword">null</span>)</div><div class="line">                    pred = q;</div><div class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (pred != <span class="keyword">null</span>) &#123;</div><div class="line">                    pred.next = s;</div><div class="line">                    <span class="keyword">if</span> (pred.thread == <span class="keyword">null</span>) <span class="comment">// check for race</span></div><div class="line">                        <span class="keyword">continue</span> retry;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (!UNSAFE.compareAndSwapObject(<span class="keyword">this</span>, waitersOffset,</div><div class="line">                                                      q, s))</div><div class="line">                    <span class="keyword">continue</span> retry;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>异步任务队列是线程安全的，在多线程下也只会被执行一次任务。需要注意的是在多个状态之间切换的一些细微处。同时也要了解在实现中对==sun.misc.Unsafe==类的使用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/thread/FutureTask/" data-id="cj7o7n5xo000gewaih8kod0zf" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/thread/Future" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/thread/Future/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.443Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-Future类"><a href="#java源码解析-Future类" class="headerlink" title="java源码解析-Future类"></a>java源码解析-Future类</h2><p>Future是在jdk1.5之后才加入进来，属于java.util.concurrent.*框架中的一个接口。</p>
+<p>Future接口定义了一个异步计算结果的规则。在Future类中的方法可以用来检查计算是否完成，等待计算完成，取得计算结果。结果只能通过方法get()来获取，他会阻塞等待计算结果；同时也可以取消一个异步计算任务，但是这个任务必须是要没有开始执行的。如果我们只想用Future来实现一个可以取消的任务而不是要获取一个可用的计算结果，那么我们可以声明为Future&lt;?&gt;，然后再get()方法中返回null。<br>Future的使用方式如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="number">1</span>. 直接使用Future,从ExecutorService中返回一个Future实例</div><div class="line"><span class="class"><span class="keyword">interface</span> <span class="title">ArchiveSearcher</span> </span>&#123; <span class="function">String <span class="title">search</span><span class="params">(String target)</span></span>; &#125;</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">App</span> </span>&#123;</div><div class="line">  ExecutorService executor = ...</div><div class="line">  ArchiveSearcher searcher = ...</div><div class="line">  <span class="function"><span class="keyword">void</span> <span class="title">showSearch</span><span class="params">(<span class="keyword">final</span> String target)</span></span></div><div class="line"><span class="function">      <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">    Future&lt;String&gt; future</div><div class="line">      = executor.submit(<span class="keyword">new</span> Callable&lt;String&gt;() &#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> searcher.search(target);</div><div class="line">        &#125;&#125;);</div><div class="line">    displayOtherThings(); <span class="comment">// do other things while searching</span></div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">      displayText(future.get()); <span class="comment">// use future</span></div><div class="line">    &#125; <span class="keyword">catch</span> (ExecutionException ex) &#123; cleanup(); <span class="keyword">return</span>; &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="number">2</span>. 使用FutureTask类,FutureTask是RunnableFuture接口的一个基本实现.</div><div class="line">FutureTask&lt;String&gt; future =</div><div class="line"><span class="keyword">new</span> FutureTask&lt;String&gt;(<span class="keyword">new</span> Callable&lt;String&gt;() &#123;</div><div class="line"> <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">()</span> </span>&#123;</div><div class="line">   <span class="keyword">return</span> searcher.search(target);</div><div class="line">&#125;&#125;);</div><div class="line">executor.execute(future);</div></pre></td></tr></table></figure>
+<h3 id="方法定义"><a href="#方法定义" class="headerlink" title="方法定义"></a>方法定义</h3><p>下面看看Future接口里面定义的方法, 他的具体实现将在FutureTask中分析</p>
+<blockquote>
+<p>boolean cancel(boolean mayInterruptIfRunning);<br>取消一个异步计算任务</p>
+<p>boolean isCancelled();<br>判断任务是否被取消</p>
+<p>boolean isDone();<br>判断任务是否完成, 任务完成的状态标志包括:正常结束, 出现异常, 被取消</p>
+<p>V get() throws InterruptedException, ExecutionException;<br>获取异步任务结果</p>
+<p>V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;<br>在给定的时间范围内获取异步任务结果</p>
+</blockquote>
+<p>RunnableFuture(V)继承自Future和Runnable，使得Future是可执行的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/thread/Future/" data-id="cj7o7n5xn000fewaihbqogzn2" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/annotation/Annotation" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/annotation/Annotation/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.438Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/annotation/Annotation/" data-id="cj7o7n5xm000eewai0mdef5qc" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/spring/由Aop引发的血案" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/spring/由Aop引发的血案/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.427Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="由AOP引发的血案"><a href="#由AOP引发的血案" class="headerlink" title="由AOP引发的血案"></a>由AOP引发的血案</h2><p><strong>Controller类</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line"><span class="comment"> * 文件名：[]</span></div><div class="line"><span class="comment"> * 版权：</span></div><div class="line"><span class="comment"> * 描述：</span></div><div class="line"><span class="comment"> * 修改人：shell</span></div><div class="line"><span class="comment"> * 修改时间：2016年1月4日</span></div><div class="line"><span class="comment"> * 修改内容：</span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="keyword">package</span> com.shell.user;</div><div class="line"></div><div class="line"><span class="keyword">import</span> java.awt.image.BufferedImage;</div><div class="line"><span class="keyword">import</span> java.io.IOException;</div><div class="line"><span class="keyword">import</span> java.io.OutputStream;</div><div class="line"><span class="keyword">import</span> java.io.PrintWriter;</div><div class="line"></div><div class="line"><span class="keyword">import</span> javax.imageio.ImageIO;</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</div><div class="line"><span class="keyword">import</span> org.springframework.context.annotation.Scope;</div><div class="line"><span class="keyword">import</span> org.springframework.stereotype.Controller;</div><div class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RequestMapping;</div><div class="line"></div><div class="line"><span class="keyword">import</span> com.google.code.kaptcha.Producer;</div><div class="line"><span class="keyword">import</span> com.shell.common.constants.SysConstants;</div><div class="line"><span class="keyword">import</span> com.shell.common.controller.BaseController;</div><div class="line"><span class="keyword">import</span> com.shell.common.model.ResultObject;</div><div class="line"><span class="keyword">import</span> com.shell.user.impl.UserServiceImpl;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment"> * &lt;一句话功能简述&gt;</span></div><div class="line"><span class="comment"> * &lt;功能详细描述&gt;</span></div><div class="line"><span class="comment"> * <span class="doctag">@author</span>   shell</span></div><div class="line"><span class="comment"> * <span class="doctag">@version</span>  [版本号,2016年1月4日]</span></div><div class="line"><span class="comment"> * <span class="doctag">@seee</span>      </span></div><div class="line"><span class="comment"> * <span class="doctag">@since</span></span></div><div class="line"><span class="comment"> * <span class="doctag">@Deprecated</span></span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="meta">@Controller</span></div><div class="line"><span class="meta">@Scope</span>(<span class="string">"prototype"</span>)</div><div class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/user"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserController</span> <span class="keyword">extends</span> <span class="title">BaseController</span> </span>&#123;</div><div class="line"> </div><div class="line"> <span class="meta">@Autowired</span></div><div class="line">    <span class="keyword">private</span> Producer captchaProducer;</div><div class="line"> </div><div class="line"> <span class="meta">@Autowired</span></div><div class="line"> <span class="keyword">private</span> UserServiceImpl userService;   <span class="comment">// 直接是一个实现类</span></div><div class="line"> </div><div class="line"> <span class="meta">@RequestMapping</span>(<span class="string">"/authCode"</span>)</div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">authCode</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">  String text = captchaProducer.createText();</div><div class="line">  BufferedImage image = captchaProducer.createImage(text);</div><div class="line">  session.setAttribute(SysConstants.VERIFY_CODE, text);</div><div class="line">  OutputStream out = response.getOutputStream();</div><div class="line">  ImageIO.write(image, <span class="string">"png"</span>, out);</div><div class="line">  out.flush();</div><div class="line">  out.close();</div><div class="line"> &#125;</div><div class="line"> </div><div class="line"> <span class="meta">@RequestMapping</span>(<span class="string">"/login"</span>)</div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">login</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">  String account = request.getParameter(<span class="string">"account"</span>);</div><div class="line">  String password = request.getParameter(<span class="string">"password"</span>);</div><div class="line">  Object user = userService.getUser(account,password);</div><div class="line">  PrintWriter out = response.getWriter();</div><div class="line">  ResultObject resultObject = <span class="keyword">new</span> ResultObject();</div><div class="line">  resultObject.setData(user);</div><div class="line">  out.write(resultObject.toString());</div><div class="line"> &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>Service类</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line"><span class="comment"> * 文件名：[]</span></div><div class="line"><span class="comment"> * 版权：</span></div><div class="line"><span class="comment"> * 描述：</span></div><div class="line"><span class="comment"> * 修改人：shell</span></div><div class="line"><span class="comment"> * 修改时间：2016年3月2日</span></div><div class="line"><span class="comment"> * 修改内容：</span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="keyword">package</span> com.shell.user.impl;</div><div class="line"></div><div class="line"><span class="keyword">import</span> java.util.HashMap;</div><div class="line"><span class="keyword">import</span> java.util.Map;</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</div><div class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</div><div class="line"></div><div class="line"><span class="keyword">import</span> com.shell.common.cache.CacheAnnotation;</div><div class="line"><span class="keyword">import</span> com.shell.common.cache.CacheOperateEnum;</div><div class="line"><span class="keyword">import</span> com.shell.common.dao.BaseDao;</div><div class="line"><span class="keyword">import</span> com.shell.common.service.impl.BaseServiceImpl;</div><div class="line"><span class="keyword">import</span> com.shell.user.User;</div><div class="line"><span class="keyword">import</span> com.shell.user.ifc.UserDao;</div><div class="line"><span class="keyword">import</span> com.shell.user.ifc.UserService;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment"> * &lt;一句话功能简述&gt;</span></div><div class="line"><span class="comment"> * &lt;功能详细描述&gt;</span></div><div class="line"><span class="comment"> * <span class="doctag">@author</span>   shell</span></div><div class="line"><span class="comment"> * <span class="doctag">@version</span>  [版本号,2016年3月2日]</span></div><div class="line"><span class="comment"> * <span class="doctag">@seee</span>      </span></div><div class="line"><span class="comment"> * <span class="doctag">@since</span></span></div><div class="line"><span class="comment"> * <span class="doctag">@Deprecated</span></span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="meta">@Service</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserServiceImpl</span> <span class="keyword">extends</span> <span class="title">BaseServiceImpl</span>&lt;<span class="title">User</span>&gt; </span>&#123;</div><div class="line"> <span class="meta">@Autowired</span></div><div class="line"> <span class="keyword">private</span> UserDao dao;</div><div class="line"> </div><div class="line"> <span class="meta">@Override</span></div><div class="line"> <span class="function"><span class="keyword">protected</span> BaseDao&lt;User&gt; <span class="title">getDao</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> dao;</div><div class="line"> &#125;</div><div class="line"> <span class="meta">@CacheAnnotation</span>(operate=CacheOperateEnum.SELECT)</div><div class="line"> <span class="function"><span class="keyword">public</span> Object <span class="title">getUser</span><span class="params">(String account, String password)</span> </span>&#123;</div><div class="line">  Map&lt;String, Object&gt; params = <span class="keyword">new</span> HashMap&lt;&gt;();</div><div class="line">  params.put(<span class="string">"account"</span>, account);</div><div class="line">  params.put(<span class="string">"password"</span>, password);</div><div class="line">  params.put(<span class="string">"sqlId"</span>, <span class="string">"getUser"</span>);</div><div class="line">  Object user = queryObject(params);</div><div class="line">  System.out.println(<span class="string">"××××××××8×××××××执行查询××××××××××××××××××"</span>);</div><div class="line">  <span class="keyword">return</span> user;</div><div class="line"> &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>AOP类</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line"><span class="comment"> * 文件名：[]</span></div><div class="line"><span class="comment"> * 版权：</span></div><div class="line"><span class="comment"> * 描述：AOP缓存控制配置--- 注解实现</span></div><div class="line"><span class="comment"> * 修改人：shell</span></div><div class="line"><span class="comment"> * 修改时间：2016年3月2日</span></div><div class="line"><span class="comment"> * 修改内容：</span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="keyword">package</span> com.shell.common.cache;</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.aspectj.lang.ProceedingJoinPoint;</div><div class="line"><span class="keyword">import</span> org.aspectj.lang.annotation.Around;</div><div class="line"><span class="keyword">import</span> org.aspectj.lang.annotation.Aspect;</div><div class="line"><span class="keyword">import</span> org.aspectj.lang.reflect.MethodSignature;</div><div class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</div><div class="line"><span class="keyword">import</span> org.springframework.cache.ehcache.EhCacheCache;</div><div class="line"><span class="keyword">import</span> org.springframework.cache.ehcache.EhCacheCacheManager;</div><div class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</div><div class="line"></div><div class="line"><span class="keyword">import</span> net.sf.ehcache.Ehcache;</div><div class="line"><span class="keyword">import</span> net.sf.ehcache.Element;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment"> * &lt;一句话功能简述&gt;</span></div><div class="line"><span class="comment"> * &lt;功能详细描述&gt;</span></div><div class="line"><span class="comment"> * <span class="doctag">@author</span>   shell</span></div><div class="line"><span class="comment"> * <span class="doctag">@version</span>  [版本号,2016年3月2日]</span></div><div class="line"><span class="comment"> * <span class="doctag">@see</span>    </span></div><div class="line"><span class="comment"> * <span class="doctag">@since</span></span></div><div class="line"><span class="comment"> * <span class="doctag">@Deprecated</span></span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="meta">@Aspect</span></div><div class="line"><span class="meta">@Component</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CacheInterceptor</span> </span>&#123;</div><div class="line"> <span class="meta">@Autowired</span></div><div class="line"> <span class="keyword">private</span> EhCacheCacheManager ehcacheManager;</div><div class="line"> </div><div class="line"> <span class="meta">@Around</span>(<span class="string">"@annotation(CacheAnnotation)"</span>)</div><div class="line"> <span class="function"><span class="keyword">public</span> Object <span class="title">executeCacheOperate</span><span class="params">(ProceedingJoinPoint joinPoint)</span> <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">  Object target = joinPoint.getTarget();</div><div class="line">  String className = target.getClass().getName();</div><div class="line">  String method = joinPoint.getSignature().getName();</div><div class="line">  CacheAnnotation anno = ((MethodSignature)joinPoint.getSignature()).getMethod().getAnnotation(CacheAnnotation.class);</div><div class="line"> </div><div class="line">  String key = className + <span class="string">"."</span> + method;</div><div class="line">  Object result = <span class="keyword">null</span>;</div><div class="line">  Ehcache ehcache = ((EhCacheCache) ehcacheManager.getCache(<span class="string">"sample"</span>)).getNativeCache();</div><div class="line">  <span class="keyword">switch</span> (anno.operate()) &#123;</div><div class="line">  <span class="keyword">case</span> ADD:</div><div class="line">   joinPoint.proceed();</div><div class="line">   <span class="keyword">break</span>;</div><div class="line">  <span class="keyword">case</span> DELETE:</div><div class="line">  <span class="keyword">case</span> UPDATE:</div><div class="line">   <span class="keyword">if</span>(ehcache.isKeyInCache(key)) &#123;</div><div class="line">    ehcache.remove(key);</div><div class="line">   &#125;</div><div class="line">   joinPoint.proceed();</div><div class="line">   <span class="keyword">break</span>;</div><div class="line">  <span class="keyword">case</span> SELECT:</div><div class="line">   <span class="keyword">if</span>(ehcache.isKeyInCache(key)) &#123;</div><div class="line">    result = ehcache.get(key);</div><div class="line">    <span class="keyword">break</span>;</div><div class="line">   &#125;</div><div class="line">   Object value = joinPoint.proceed();</div><div class="line">   Element element = <span class="keyword">new</span> Element(key, value);</div><div class="line">   ehcache.put(element);</div><div class="line">   <span class="keyword">break</span>;</div><div class="line">  <span class="keyword">default</span>:</div><div class="line">   <span class="keyword">break</span>;</div><div class="line">  &#125;</div><div class="line"> </div><div class="line">  <span class="keyword">return</span> result;</div><div class="line"> &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>aop配置</strong></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">aop:config</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">aop:pointcut</span> <span class="attr">expression</span>=<span class="string">"execution(* com.shell..*ServiceImpl.*(..))"</span> <span class="attr">id</span>=<span class="string">"pointCut"</span>/&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">aop:advisor</span> <span class="attr">advice-ref</span>=<span class="string">"txAdvice"</span> <span class="attr">pointcut-ref</span>=<span class="string">"pointCut"</span>/&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">aop:config</span>&gt;</span></div></pre></td></tr></table></figure>
+<p><strong>springmvc配置</strong></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></div><div class="line"><span class="tag"><span class="attr">xmlns:mvc</span>=<span class="string">"http://www.springframework.org/schema/mvc"</span> <span class="attr">xmlns:context</span>=<span class="string">"http://www.springframework.org/schema/context"</span></span></div><div class="line"><span class="tag"><span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span> <span class="attr">xmlns:aop</span>=<span class="string">"http://www.springframework.org/schema/aop"</span></span></div><div class="line"><span class="tag"><span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans  </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/beans/spring-beans-3.1.xsd </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/aop  </span></span></div><div class="line"><span class="tag"><span class="string">      	http://www.springframework.org/schema/aop/spring-aop-3.2.xsd </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/context   </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/context/spring-context-3.1.xsd  </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/mvc  </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd"</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">context:component-scan</span> <span class="attr">base-package</span>=<span class="string">"com.shell.*"</span>&gt;</span></div><div class="line">  	<span class="tag">&lt;<span class="name">context:include-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span></span></div><div class="line"><span class="tag">		<span class="attr">expression</span>=<span class="string">"org.springframework.stereotype.Controller"</span> /&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">context:component-scan</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">aop:aspectj-autoproxy</span>&gt;</span><span class="tag">&lt;/<span class="name">aop:aspectj-autoproxy</span>&gt;</span><span class="comment">&lt;!-- 引发血案的关键地方 --&gt;</span></div><div class="line">  <span class="comment">&lt;!-- 视图 --&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"org.springframework.web.servlet.view.InternalResourceViewResolver"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"prefix"</span> <span class="attr">value</span>=<span class="string">"/WEB-INF/views/"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"suffix"</span> <span class="attr">value</span>=<span class="string">".jsp"</span> /&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"></div><div class="line">  <span class="tag">&lt;<span class="name">mvc:annotation-driven</span>&gt;</span><span class="tag">&lt;/<span class="name">mvc:annotation-driven</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">mvc:resources</span> <span class="attr">location</span>=<span class="string">"/WEB-INF/static/"</span> <span class="attr">mapping</span>=<span class="string">"/static/**"</span> /&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">mvc:resources</span> <span class="attr">location</span>=<span class="string">"/assets/"</span> <span class="attr">mapping</span>=<span class="string">"/assets/**"</span> /&gt;</span></div><div class="line"></div><div class="line">  <span class="comment">&lt;!-- 页面生成随机验证码 --&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"captchaProducer"</span> <span class="attr">class</span>=<span class="string">"com.google.code.kaptcha.impl.DefaultKaptcha"</span>&gt;</span></div><div class="line">  	<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"config"</span>&gt;</span></div><div class="line">  	<span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"com.google.code.kaptcha.util.Config"</span>&gt;</span></div><div class="line">  	<span class="tag">&lt;<span class="name">constructor-arg</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">props</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.border"</span>&gt;</span>no<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.border.color"</span>&gt;</span>105,179,90<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.textproducer.font.color"</span>&gt;</span>red<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.image.width"</span>&gt;</span>250<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.textproducer.font.size"</span>&gt;</span>80<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.image.height"</span>&gt;</span>90<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.session.key"</span>&gt;</span>code<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.textproducer.char.length"</span>&gt;</span>4<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.textproducer.font.names"</span>&gt;</span>宋体,楷体,微软雅黑<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;/<span class="name">props</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">constructor-arg</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line">  	<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>问题描述：当我在浏览器输入项目根地址（配置会跳转到网页登陆首页– 会访问验证码接口（即authCode路径））时，不能够正确获取到验证码， 后台报错是说@Autowired private UserServiceImpl userService;此处的UserServiceImpl不能够找到一个类型匹配的实力注入，从而导致Controllor实例化失败，造成访问不到authCode路径，所以出不来验证码。根据我此前所有的知识，我绞尽脑汁也想不清问题所在，因为我在UserServiceImpl的类上面明确加了注解@Service，而且在配置文件中也配置了扫描注解包，从我的理解查看来看是不会有任何问题的。 但是现在问题出现了。</p>
+<p>解决方式： 根据先前已有的一个成功功能实现，我新建了一个接口UserService，并让UserServiceImpl实现它，之后再在Controllor中换成该接口，其他配置不变，再尝试访问的时候，好了，奇迹般的好了，问题解决了。然而问题是解决了，但是我还是不知道是什么原因引起的，由于时间很晚，所以问题暂时搁下。</p>
+<p>第二天（也就是我写文章的这天），我在公司看其他问题的时候，偶然看到了一个aop 代理 proxy-target-class配置为true，然后是什么接口和类的区别时，诶，我一想跟我昨晚的问题有点类似。</p>
+<p>然后今晚我回来看了关于AOP的问题。</p>
+<p>在spring中，AOP（面向切面编程）是基于动态代理的方式实现的，而spring对于动态代理的方式有两种选择： jdk动态代理和cglib动态代理。</p>
+<p>jdk动态代理是基于接口实现的，也就是说他的代理目标对象必须要实现一个或者多个接口才能被代理；</p>
+<p>cglib是直接针对类实现代理的，没必要实现接口；</p>
+<p>知道这两个区别，上述问题就变得明朗了。</p>
+<p>由于我在配置文件中加了元素：</p>
+<p>\<aop:aspectj-autoproxy>\</aop:aspectj-autoproxy> 这个元素属性的意思是，aop代理的实现方式使用jdk的方式实现相当于\<aop:aspectj-autoproxy proxy-target-class="false">\</aop:aspectj-autoproxy>这种配置方式。</p>
+<p>由于有这个配置的存在，因为UserServiceImpl实现是没有实现UserService接口的，而这个类有要被事物，缓存，日志3个aop代理，所以造成被代理时不能正确的被代理，被实例化，所以造成Controller注入时，找不到该UserServiceImpl的实力而失败。</p>
+<p>知道这个原因后， 我将配置\<aop:aspectj-autoproxy proxy-target-class="false">\</aop:aspectj-autoproxy>改为\<aop:aspectj-autoproxy proxy-target-class="true">\</aop:aspectj-autoproxy>（吃配置方式表示使用cglib的代理方式），再重新将UserServiceImpl的实现接口给去掉，再次加载访问，错误不再出现。</p>
+<p>同时有网友说spring会自动根据你的实现来选择合适的代理方式，所以我试着将\<aop:aspectj-autoproxy proxy-target-class="true">\</aop:aspectj-autoproxy>这样的配置去掉，问题也可以成功解决。</p>
+<p>\<aop:config proxy-target-class="true">强制spring使用cglib代理方式</aop:config></p>
+<p>\<aop:aspectj-autoproxy proxy-target-class="true">\</aop:aspectj-autoproxy>强制spring  aspectj方式实现aop时使用cglib方式    </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/spring/由Aop引发的血案/" data-id="cj7o7n5xh000dewair5bdzn0p" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/spring/spring声明式事物管理" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/spring/spring声明式事物管理/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.424Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Spring声明式事物管理，即他的属性Propagation"><a href="#Spring声明式事物管理，即他的属性Propagation" class="headerlink" title="Spring声明式事物管理，即他的属性Propagation"></a>Spring声明式事物管理，即他的属性Propagation</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"transactionManager"</span></span></div><div class="line"><span class="tag">      <span class="attr">class</span>=<span class="string">"org.springframework.jdbc.datasource.DataSourceTransactionManager"</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"dataSource"</span> <span class="attr">ref</span>=<span class="string">"dataSource"</span> /&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">tx:advice</span> <span class="attr">id</span>=<span class="string">"txAdvice"</span> <span class="attr">transaction-manager</span>=<span class="string">"transactionManager"</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">tx:attributes</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">tx:method</span> <span class="attr">name</span>=<span class="string">"add*"</span> <span class="attr">read-only</span>=<span class="string">"false"</span> <span class="attr">propagation</span>=<span class="string">"REQUIRED"</span> <span class="attr">rollback-for</span>=<span class="string">"java.lang.Exception"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">tx:method</span> <span class="attr">name</span>=<span class="string">"get*"</span> <span class="attr">read-only</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">tx:method</span> <span class="attr">name</span>=<span class="string">"delete"</span> <span class="attr">read-only</span>=<span class="string">"false"</span> <span class="attr">rollback-for</span>=<span class="string">"java.lang.Exception"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">tx:method</span> <span class="attr">name</span>=<span class="string">"update*"</span> <span class="attr">read-only</span>=<span class="string">"false"</span> <span class="attr">rollback-for</span>=<span class="string">"java.lang.Exception"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">tx:method</span> <span class="attr">name</span>=<span class="string">"count*"</span> <span class="attr">read-only</span>=<span class="string">"true"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">tx:method</span> <span class="attr">name</span>=<span class="string">"*"</span> <span class="attr">read-only</span>=<span class="string">"false"</span> <span class="attr">rollback-for</span>=<span class="string">"java.lang.Exception"</span>/&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">tx:attributes</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">tx:advice</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">aop:config</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">aop:pointcut</span> <span class="attr">expression</span>=<span class="string">"execution(* com.goldenculture..*Service.*(..))"</span> <span class="attr">id</span>=<span class="string">"pointCut"</span>/&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">aop:advisor</span> <span class="attr">advice-ref</span>=<span class="string">"txAdvice"</span> <span class="attr">pointcut-ref</span>=<span class="string">"pointCut"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">aop:config</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>spring使用tx命名空间配置事物3步搞定：</p>
+<ol>
+<li>声明一个事物管理器</li>
+<li>配置事物属性</li>
+<li>aop配置切入点和属性管理，也就是要在哪些方法上使用事物</li>
+</ol>
+<p>理解事物属性<strong>propagation：</strong></p>
+<p>Spring中提供的propagation值总共有7个，他们分别是：REQUIRED，SUPPORTS，MANDATORY，REQUIRES_NEW，NOT_SUPPORTS，NEVER，NESTED下面分别对这几个属性意思进行讲解：</p>
+<p>举例：</p>
+<p>A类中拥有方法methodA(),  B类中拥有方法methodB(),此两个方法都属于事物管理层面，且都操作数据库，在methodA()中调用方法methodB(), methodB()会抛出一个runtimeexception</p>
+<p><strong>required：</strong>如果当前不存在事物，则创建一个新的事物，如果已经存在一个事物，那么不创建新事物，并且加入当前事物执行。针对例子，在调用执行A方法时，会创建一个事物，并且创建一个数据库会话；当执行到方法B时，由于已经存在事物，故将方法B直接加入当前A的事物中，并不会再创建一个新的事物，也不会再创建新的数据库会话，而是直接使用A获得的那个会话对象。 由于方法B模拟抛出一个异常，如果方法B不对此异常try-catch而是直接抛出，不管A有没有try-catch,那么就会造成整个事物回滚。 而如果B对此异常try-catch了，那么不管A有没有try-catch,那么造成的结果是A方法对数据库的操作依然不会回滚，而只有方法B会回滚操作；</p>
+<p><strong>supports：</strong>  如果当前存在事物，则不创建新的事物，如果不存在事物，则无事物执行，所以如果配置文件中事物属性propagation的值配置的都是supports值，那么整个应用都将是无事物管理执行；</p>
+<p><strong>mandatory：</strong> 如果存在事物，则不创建新的事物，如果不存在事物，则抛出异常，同supports属性值一样,如果配置文件中事物属性propagation的值配置的都是mandatory,那么整个应用将抛出异常而不能操作数据库；</p>
+<p><strong>requires_new：</strong> 总是开启一个新的事物，如果已经存在事物，则挂起当前事物。事物之间互不影响，并且创建的新事物也会创建新的数据库会话；</p>
+<p><strong>nested：</strong>  会创建一个新的事物，但是是一个内嵌的事物，也就是说是包含在存在的事物里面的一个事物。不会创建新的数据库会话，而是用外层事物的数据库会话对象。外层事物会设置一个savepoint（）。方法B抛出异常没有捕捉时，如果方法A不对异常进行捕捉，那么会造成A方法的操作回滚，而如果方法A对其进行捕捉，那么方法A的操作也不会回滚。内层事物出错时可能影响外层事物（不捕捉错误时），外层事物出错时则不会影响到内层事物的执行；</p>
+<p><strong>not_support：</strong> 总是非事物执行，并挂起任何存在的事物；</p>
+<p><strong>never：</strong> 非事物执行，如果存在事物则抛出异常。</p>
+<p>综上，事物总是和一个数据库的会话关联，不过要注意此处的事物并不单纯的是数据库中的一个事物，这里的事物是系列方法过程的总体执行，某个部分的异常（不管是数据库操作的异常，还是代码处理产生的异常）都会引起事物的回滚。同时为了保持数据的一致性，建议不要对一些运行时异常进行捕捉，以免造成不必要的困扰。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/spring/spring声明式事物管理/" data-id="cj7o7n5xe000bewai6kjfkyiq" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/spring/springAop中关于pointcut表达式" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/spring/springAop中关于pointcut表达式/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.421Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="spring-aop中关于切入点pointcut中的表达式"><a href="#spring-aop中关于切入点pointcut中的表达式" class="headerlink" title="spring aop中关于切入点pointcut中的表达式"></a>spring aop中关于切入点pointcut中的表达式</h2><p>表达式的语法:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">execution（modifiers-pattern? ret-type-pattern declaring-type-pattern? name-pattern（param-pattern）<span class="keyword">throws</span>-pattern?）</div></pre></td></tr></table></figure>
+<p>?表示最多出现一次,  从表达式规则可以知道: </p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">modifiers-pattern: 方法修饰符是可选的</div><div class="line">ret-type-pattern: 方法返回类型必选</div><div class="line">declaring-type-pattern: 类型声明(T, E之类的泛型类型声明)也是可选的</div><div class="line">name-pattern: 方法名字必选</div><div class="line">param-pattern: 参数名字必选</div><div class="line">throws-pattern: 异常类型可选</div></pre></td></tr></table></figure>
+<p>你会使用的最频繁的返回类型模式是*，它代表了匹配任意的返回类型,一个全限定的类型名将只会匹配返回给定类型的方法。名字模式匹配的是方法名。 你可以使用*通配符作为所有或者部分命名模式。</p>
+<p>参数模式稍微有点复杂：()匹配了一个不接受任何参数的方法， 而(..)匹配了一个接受任意数量参数的方法（零或者更多）。 模式(*)匹配了一个接受一个任何类型的参数的方法。 模式(*,String)匹配了一个接受两个参数的方法，第一个可以是任意类型， 第二个则必须是String类型。更多的信息请参阅AspectJ编程指南中 <a href="http://www.eclipse.org/aspectj/doc/released/progguide/semantics-pointcuts.html" target="_blank" rel="external">语言语义</a>的部分。</p>
+<p>下面给出一些常用的切入点表达式例子:</p>
+<ol>
+<li><p>任意公共方法的执行:<br>execution(public <em> </em>(..))</p>
+</li>
+<li><p>任何一个以set开头的方法的执行:</p>
+<p>execution(<em> set</em>(..))</p>
+</li>
+<li><p>AccountService接口定义的任意方法的执行：</p>
+<p>execution(<em> com.xyz.service.AccountService.</em>(..))</p>
+</li>
+<li><p>在service包中定义的任意方法的执行：</p>
+<p>execution(<em> com.xyz.service.</em>.*(..))</p>
+</li>
+<li>在service包或其子包中定义的任意方法的执行：<br>execution(<em> com.xyz.service..</em>.*(..))</li>
+<li>在service包中的任意连接点:(相当于在service包中任意方法的执行)<br>within(com.xyz.service.*)</li>
+<li>在service包或其子包中的任意连接点<br>within（com.xyz.service..*）</li>
+<li>实现了AccountService接口的代理对象的任意连接点<br>this（com.xyz.service.AccountService）</li>
+<li>实现AccountService接口的目标对象的任意连接点<br>target（com.xyz.service.AccountService）</li>
+<li>任何一个只接受一个参数，并且运行时所传入的参数是Serializable 接口的连接点:<br>args（java.io.Serializable）</li>
+<li>目标对象中有一个 @Transactional 注解的任意连接点<br>@target（org.springframework.transaction.annotation.Transactional）</li>
+<li>任何一个目标对象声明的类型有一个 @Transactional 注解的连接点<br>@within（org.springframework.transaction.annotation.Transactional）</li>
+<li>任何一个执行的方法有一个 @Transactional 注解的连接点<br>@annotation（org.springframework.transaction.annotation.Transactional）</li>
+<li>任何一个只接受一个参数，并且运行时所传入的参数类型具有@Classified 注解的连接点<br>@args（com.xyz.security.Classified）</li>
+<li>任何一个在名为’tradeService’的Spring bean之上的连接点<br>bean（tradeService）</li>
+<li>任何一个在名字匹配通配符表达式’<em>Service’的Spring bean之上的连接点<br>bean（</em>Service）</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/spring/springAop中关于pointcut表达式/" data-id="cj7o7n5xg000cewaih3jl2f8c" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/spring/spring4.2文档学习(四)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/spring/spring4.2文档学习(四)/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.419Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="depends-on属性的使用-lazy-initialize（懒加载）的方式-自动装配（autowiring）"><a href="#depends-on属性的使用-lazy-initialize（懒加载）的方式-自动装配（autowiring）" class="headerlink" title="depends-on属性的使用,lazy-initialize（懒加载）的方式, 自动装配（autowiring）"></a>depends-on属性的使用,lazy-initialize（懒加载）的方式, 自动装配（autowiring）</h2><h3 id="depends-on"><a href="#depends-on" class="headerlink" title="depends-on"></a>depends-on</h3><p>在spring中，多个bean之间的依赖有多种多样，比如直接通过<ref>引用依赖，像这种依赖我们称之为直接依赖。但有时，多个bean之间的依赖并不是这么直接的，比如说在数据库访问层，我们就必修要先注册建立连接，才能操作访问数据库，向这种的话就是间接依赖，那么要怎么控制这些bean之间的实例化顺序呢？那就是通过depends-on属性来控制：</ref></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"beanOne"</span> <span class="attr">class</span>=<span class="string">"ExampleBean"</span> <span class="attr">depends-on</span>=<span class="string">"manager"</span>&gt;</span><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"manager"</span> <span class="attr">class</span>=<span class="string">"ManagerBean"</span>&gt;</span><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>有多个依赖时,用逗号隔开：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"beanOne"</span> <span class="attr">class</span>=<span class="string">"ExampleBean"</span> <span class="attr">depends-on</span>=<span class="string">"manager,accountDao"</span>&gt;</span></div><div class="line">	<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"manager"</span> <span class="attr">ref</span>=<span class="string">"manager"</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"manager"</span> <span class="attr">class</span>=<span class="string">"ManagerBean"</span>&gt;</span><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"accountDao"</span> <span class="attr">class</span>=<span class="string">"x.y.jdbc.JdbcAccountDao"</span>&gt;</span><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="lazy-initialize"><a href="#lazy-initialize" class="headerlink" title="lazy-initialize"></a>lazy-initialize</h3><p>在spring中，针对每个bean元素配置的类，在容器启动时，默认生命周期（singleton）的bean都会被实例化，（prototype的在每次请求时实例化）。那么如果要想控制一个singleton的bean在spring容器启动时，不被实例化，该怎么做呢？很简单，只需要在每个bean元素中，设置其属性lazy-init=”true”即可不被实例化，而只在被请求时才被实例化。那如果我想让所有的bean在容器启动时都不被初始化，难道要每个bean都写一个lazy-init属性么？不用那么麻烦,只需要在beans根元素的default-lazy-init属性设置为true即可。</p>
+<h3 id="autowiring"><a href="#autowiring" class="headerlink" title="autowiring"></a>autowiring</h3><p>自动装配的意思就是以前在配置bean的时候，我们都要通过property或者构造方式注入的时候，都要显示的指定值或者\<ref>引用；如果我们配置了自动装配的话，那么spring将自动根据我们的配置来为我们注入属性。</ref></p>
+<p>装配方式：</p>
+<p><img src="images\1.png" alt="1"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/spring/spring4.2文档学习(四)/" data-id="cj7o7n5xd000aewai4y3ekx0b" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/spring/spring4.2文档学习(二)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/spring/spring4.2文档学习(二)/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.416Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="bean-overview-bean的预览"><a href="#bean-overview-bean的预览" class="headerlink" title="bean overview(bean的预览)"></a>bean overview(bean的预览)</h2><h3 id="Bean命名"><a href="#Bean命名" class="headerlink" title="Bean命名"></a>Bean命名</h3><p>通过id或者name属性来标识一个bean的唯一性，name属性值可以使多个值，通过逗号、空格、分号来区分每个值，通知也可以通过alias元素来指定一个bean的别名</p>
+<h3 id="Bean初始化"><a href="#Bean初始化" class="headerlink" title="Bean初始化"></a>Bean初始化</h3><ol>
+<li><p>通过构造方法来初始化一个bean</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"exampleBean"</span><span class="attr">class</span>=<span class="string">"examples.ExampleBean"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">name</span>=<span class="string">"anotherExample"</span><span class="attr">class</span>=<span class="string">"examples.ExampleBeanTwo"</span>/&gt;</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>通过静态工厂方法来初始化一个bean</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">beanid="clientService"class="examples.ClientService"factory-method="createInstance"</span>/&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">publicclass ClientService &#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> ClientService clientService = <span class="keyword">new</span> ClientService();</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">ClientService</span><span class="params">()</span> </span>&#123;&#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ClientService <span class="title">createInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> clientService;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>通过对象工厂方法来初始化一个bean</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!-- the factory bean, which contains a method called createInstance() --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"serviceLocator"</span><span class="attr">class</span>=<span class="string">"examples.DefaultServiceLocator"</span>&gt;</span></div><div class="line">  <span class="comment">&lt;!-- inject any dependencies required by this locator bean --&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"><span class="comment">&lt;!-- the bean to be created via the factory bean --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"clientService"</span> <span class="attr">factory-bean</span>=<span class="string">"serviceLocator"</span> <span class="attr">factory-method</span>=<span class="string">"createClientServiceInstance"</span>/&gt;</span></div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">publicclass DefaultServiceLocator &#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> ClientService clientService = <span class="keyword">new</span> ClientServiceImpl();</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">DefaultServiceLocator</span><span class="params">()</span> </span>&#123;&#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> ClientService <span class="title">createClientServiceInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> clientService;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/spring/spring4.2文档学习(二)/" data-id="cj7o7n5xb0009ewaip25bqvvy" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+  <nav id="page-nav">
+    <a class="extend prev" rel="prev" href="/">&laquo; __('prev')</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">__('next') &raquo;</a>
+  </nav>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

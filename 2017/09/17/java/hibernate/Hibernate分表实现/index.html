@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Hibernate—分表实现方式分表：随着应用程序使用时间的增长，数据存储数据会越来越庞大，单表数据超过百万、千万级，在这种情况下，用户的读写就会变得十分缓慢。为了提升用户体验，如何将交互时间加快就变得十分重要。在这样的情况下，对庞大的数据表进行拆分就不失为一种快速的解决方法。 项目中数据访问层用的是hibernate，那么在hibernate中如何让hibernate自动进行分表呢。这两天查看了">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/hibernate/Hibernate分表实现/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Hibernate—分表实现方式分表：随着应用程序使用时间的增长，数据存储数据会越来越庞大，单表数据超过百万、千万级，在这种情况下，用户的读写就会变得十分缓慢。为了提升用户体验，如何将交互时间加快就变得十分重要。在这样的情况下，对庞大的数据表进行拆分就不失为一种快速的解决方法。 项目中数据访问层用的是hibernate，那么在hibernate中如何让hibernate自动进行分表呢。这两天查看了">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.881Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="Hibernate—分表实现方式分表：随着应用程序使用时间的增长，数据存储数据会越来越庞大，单表数据超过百万、千万级，在这种情况下，用户的读写就会变得十分缓慢。为了提升用户体验，如何将交互时间加快就变得十分重要。在这样的情况下，对庞大的数据表进行拆分就不失为一种快速的解决方法。 项目中数据访问层用的是hibernate，那么在hibernate中如何让hibernate自动进行分表呢。这两天查看了">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/hibernate/Hibernate分表实现" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/hibernate/Hibernate分表实现/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.380Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Hibernate—分表实现方式"><a href="#Hibernate—分表实现方式" class="headerlink" title="Hibernate—分表实现方式"></a>Hibernate—分表实现方式</h2><p>分表：随着应用程序使用时间的增长，数据存储数据会越来越庞大，单表数据超过百万、千万级，在这种情况下，用户的读写就会变得十分缓慢。为了提升用户体验，如何将交互时间加快就变得十分重要。在这样的情况下，对庞大的数据表进行拆分就不失为一种快速的解决方法。</p>
+<p>项目中数据访问层用的是hibernate，那么在hibernate中如何让hibernate自动进行分表呢。这两天查看了大量的网站，自己也做了一些相应的测试。</p>
+<p>下面我将介绍三种hibernate分表的方式：</p>
+<h3 id="命名策略"><a href="#命名策略" class="headerlink" title="命名策略"></a>命名策略</h3><p>很多网友都说用hibernate中携带的命名策略方式可以进行愉快的分表操作，我测试之后确实可以进行分表操作。那么如何操作呢？代码如下：</p>
+<p>首先我们要定义自己的命名策略方式，我们可以选择实现NamingStrategy接口(要实现10个方法)，或者继承DefaultNamingStrategy类，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyNamingStrategy</span> <span class="keyword">extends</span> <span class="title">DefaultNamingStrategy</span> </span>&#123;</div><div class="line"> <span class="comment">/**</span></div><div class="line"><span class="comment">  *</span></div><div class="line"><span class="comment">  */</span></div><div class="line"> <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = -<span class="number">7881656635681313619L</span>;</div><div class="line"> <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> MyNamingStrategy INSTANCE = <span class="keyword">new</span> MyNamingStrategy();</div><div class="line"></div><div class="line"> <span class="meta">@Override</span></div><div class="line"> <span class="function"><span class="keyword">public</span> String <span class="title">classToTableName</span><span class="params">(String className)</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> <span class="string">"TBL_"</span> + StringHelper.unqualify(className) + <span class="string">"_"</span> + Calendar.getInstance().get(Calendar.DAY_OF_MONTH);</div><div class="line"> &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在classToTableName方法中，我们就可以实现自己的命名分表策略。</p>
+<p>那么如何让hibernate使用我们自己的命名策略呢？那就是在加载配置文件，初始化SessionFactory的时候：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Configuration configuration = <span class="keyword">new</span> Configuration().setNamingStrategy(MyNamingStrategy.INSTANCE).configure();</div><div class="line">StandardServiceRegistry ssr = <span class="keyword">new</span> StandardServiceRegistryBuilder()</div><div class="line">     .applySettings(configuration.getProperties()).build();</div></pre></td></tr></table></figure>
+<p>以这种方式加载配置文件的时候，在我们的映射文件的class元素就不能设置table属性，否则命名策略将会被table属性覆盖掉。</p>
+<p>同时以这种方式实现分表的时候，也不能实现逻辑复杂的分表策略，很适合基于时间的分表策略。</p>
+<p><strong>存在的问题：</strong></p>
+<p>从实现代码的方式我们也可以看出来，命名策略的方式只有在加载配置文件的时候才会被设置，也就是说只在我们的应用加载的时加载hibernate时才会应用命名策略，一旦应用加载完毕，那么我们设置的命名策略就失去了效果，相当于这里的分表只在应用加载的时候分一次。同时由于加载时是加载的分表，如果在HQL或者其他非native sql执行操作时，都值针对的此次加载的分表执行的操作，如果想用HQL或者其他非native sql方式访问之前的分表，那么将不会实现，因为SessionFactory中没有加载进来；只能通过native sql来实现访问其他分表。</p>
+<p>如果要实现应用加载后连续分表，那么我们可以设置定时重新加载hibernate配置文件的方式来实现，而不需要重启应用。</p>
+<h3 id="拦截器"><a href="#拦截器" class="headerlink" title="拦截器"></a>拦截器</h3><p>hibernate提供了拦截器类来让我们可以在hibernate执行真正的sql语句之前，对sql语句进行拦截，这就提供给了我们更改执行的sql语句的机会。用拦截器其实是不能实现hibernate的自动分表的，而只能让我们对分表操作；也就是说我们自己要事先分好表，然后在拦截器中操作我们的分表。至于如何事先分表，可以考录数据库存储过程。</p>
+<p>那么拦截器如何操作我们的分表呢？</p>
+<p>a. 实现我们自己的Interceptor或者集成hibernate已有的Interceptor（EmptyInterceptor）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyInterceptor</span> <span class="keyword">extends</span> <span class="title">EmptyInterceptor</span> </span>&#123;</div><div class="line"> <span class="keyword">private</span> String name;</div><div class="line"> <span class="keyword">private</span> String tableName;</div><div class="line"> </div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="title">MyInterceptor</span><span class="params">(String tableName, String suffix)</span> </span>&#123;</div><div class="line">  <span class="keyword">this</span>.tableName = tableName;</div><div class="line">  <span class="keyword">this</span>.name = suffix;</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> <span class="comment">/**</span></div><div class="line"><span class="comment">  * <span class="doctag">@param</span> name</span></div><div class="line"><span class="comment">  *            the name to set</span></div><div class="line"><span class="comment">  */</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">  <span class="keyword">this</span>.name = name;</div><div class="line"> &#125;</div><div class="line"></div><div class="line"> <span class="meta">@Override</span></div><div class="line"> <span class="function"><span class="keyword">public</span> String <span class="title">onPrepareStatement</span><span class="params">(String sql)</span> </span>&#123;</div><div class="line">  sql = sql.replace(tableName, tableName + <span class="string">"_"</span> + name);</div><div class="line">  <span class="keyword">return</span> <span class="keyword">super</span>.onPrepareStatement(sql);</div><div class="line"> &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在我们自己的实现类中，我们主要是要重写onPrepareStatement方法，这个方法就是返回我们最终要执行的sql语句的方法。在这个方法中我们可以对sql进行解析替换，然后返回我们自己想要的sql语句。</p>
+<p>b. 调用拦截器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Test</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test01</span><span class="params">()</span> </span>&#123;</div><div class="line">  SessionFactory sessionFactory = HibernateUtil.getSessionFactory();</div><div class="line">  String tableName = HibernateUtil.getTableName(Person.class);</div><div class="line">  Session session = sessionFactory.withOptions().interceptor(<span class="keyword">new</span> MyInterceptor(tableName, <span class="string">"01"</span>)).openSession(); <span class="comment">//可以配置多个Interceptor，多表操作相对方便</span></div><div class="line">  Person person = <span class="keyword">new</span> Person();</div><div class="line">  person.setFirstName(<span class="string">"hh"</span>);</div><div class="line">  person.setLastName(<span class="string">"aaa"</span>);</div><div class="line"> </div><div class="line">  Transaction transaction = session.beginTransaction();</div><div class="line">  session.save(person);</div><div class="line">  transaction.commit();</div><div class="line"> &#125;</div></pre></td></tr></table></figure>
+<p>我们可以看到拦截器是基于Session的，而不是SessionFactory级别，所以针对插入查询都很灵活。我们想要查询哪个分表，我们就可以通过拦截器构造方法传入我们想要操作的分表即可。</p>
+<p><strong>问题：</strong></p>
+<p>分表操作要自己实现；多表联合操作的时候不太灵活，没验证过，只是我的想法。</p>
+<h3 id="原生sql-Native-SQL"><a href="#原生sql-Native-SQL" class="headerlink" title="原生sql(Native SQL)"></a>原生sql(Native SQL)</h3><p>最后一种分表方式那就是直接使用原生sql语句，创建、插入、查询。hibernate支持原生sql语句的操作，所以用这种方式最直接也是最完全的，不过前提是开发者对sql要有一定的熟悉度。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/hibernate/Hibernate分表实现/" data-id="cj7o7n5w70004ewai1pyatx2n" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/spring/Autowired-Resource注解对比/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/java/发送邮件/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

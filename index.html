@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-java/源码学习/util/Vector" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/Vector/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.490Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-Vector类"><a href="#java源码解析-Vector类" class="headerlink" title="java源码解析-Vector类"></a>java源码解析-Vector类</h2><p>Vector是java中线程安全的list，每个公有方法均被synchronized修饰，在多线程环境下推荐使用这个类来创建list。与Arraylist在一些区别是：<br>a. 容量会自动扩充和缩小<br>b. 容量扩充的大小通过构造方式传入或者默认的两倍</p>
+<h3 id="类定义"><a href="#类定义" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Vector</span>&lt;<span class="title">E</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">AbstractList</span>&lt;<span class="title">E</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">List</span>&lt;<span class="title">E</span>&gt;, <span class="title">RandomAccess</span>, <span class="title">Cloneable</span>, <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span></span></div></pre></td></tr></table></figure>
+<h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>protected int</td>
+<td>capacityIncrement</td>
+<td>扩容大小</td>
+</tr>
+<tr>
+<td>protected Object[]</td>
+<td>elementData</td>
+<td>存储数据的数组对象</td>
+</tr>
+<tr>
+<td>protected int</td>
+<td>elementCount</td>
+<td>list中存储数据的实际容量</td>
+</tr>
+<tr>
+<td>protected transient int</td>
+<td>modCount</td>
+<td>继承自AbstractList,记录elementCount变化的次数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="构造方式"><a href="#构造方式" class="headerlink" title="构造方式"></a>构造方式</h3><blockquote>
+<p>public Vector(int initialCapacity, int capacityIncrement)<br>创建一个容量大小为initialCapacity，每次扩容增加capacityIncrement个位置的vector</p>
+<p>public Vector(int initialCapacity)<br>创建一个容量大小为initialCapacity，每次扩容到当前容量的两倍</p>
+<p>public Vector()<br>创建一个容量大小为10，每次扩容到当前容量的两倍</p>
+<p>public Vector(Collection&lt;? extends E&gt; c)<br>从其他Collection创建vector</p>
+</blockquote>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><blockquote>
+<p><strong>public synchronized void setSize(int newSize)</strong><br>设定当前vector的elementCount值，如果newSize&gt;elementCount，那么多余的位置用null填充，如果newSize&lt;elementCount，那么截断newSize后的元素。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">setSize</span><span class="params">(<span class="keyword">int</span> newSize)</span> </span>&#123;</div><div class="line">    modCount++;</div><div class="line">    <span class="keyword">if</span> (newSize &gt; elementCount) &#123;</div><div class="line">        ensureCapacityHelper(newSize);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = newSize ; i &lt; elementCount ; i++) &#123;</div><div class="line">            elementData[i] = <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    elementCount = newSize;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>public Enumeration\<e> elements()</e></strong><br>返回这个vector数据结构的枚举类型表示</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Enumeration&lt;E&gt; <span class="title">elements</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Enumeration&lt;E&gt;() &#123;</div><div class="line">        <span class="keyword">int</span> count = <span class="number">0</span>;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">hasMoreElements</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">return</span> count &lt; elementCount;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> E <span class="title">nextElement</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="comment">// 这个方法的调用仍然会有多线程的问题, 多个线程遍历时,可能不会遍历到所有</span></div><div class="line">            <span class="keyword">synchronized</span> (Vector.<span class="keyword">this</span>) &#123;</div><div class="line">                <span class="keyword">if</span> (count &lt; elementCount) &#123;</div><div class="line">                    <span class="keyword">return</span> elementData(count++);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NoSuchElementException(<span class="string">"Vector Enumeration"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>==public synchronized int indexOf(Object o, int index)==</strong><br>从索引index向后搜索o对象的索引位置，ArrayList中无此方法  </p>
+<p><strong>==public synchronized int lastIndexOf(Object o, int index)==</strong><br>从索引index向前搜索o的索引位置</p>
+<p><strong>public synchronized E elementAt(int index)</strong><br>索引index处的对象，对应ArrayList中的get()方法  </p>
+</blockquote>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/Vector/" data-id="cj7o7n60i000rewaim2a34cda" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/util/TreeMap" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/TreeMap/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.487Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-TreeMap类"><a href="#java源码解析-TreeMap类" class="headerlink" title="java源码解析-TreeMap类"></a>java源码解析-TreeMap类</h2><p>TreeMap：基于红黑树实现的一个有序的Map实现类。这个有序的维护是通过key实现的Comparable接口或者是在构造时传入的Comparator类来实现它的一个排序规则的。TreeMap的实现保证了containsKey()，put()，get()，remove()操作的时间复杂度均是log(n)(n是树上的entry数)。TreeMap是非线程安全类，如果多个线程同时访问来修改treemap的结构(改变结构是指执行了添加或者删除操作，如果改变一个已经存在的key的值这类操作则不算是改变结构)，那么必须在外部来保证对这个treemap的同步访问。<br>如果要对一个treemap进行同步访问，我们也可以使用java中提供的同步包装类来实现同步，例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">SortedMap m = Collections.synchronizedSortedMap(<span class="keyword">new</span> TreeMap(...));</div></pre></td></tr></table></figure>
+<p>下面我们来看看TreeMap中的Entry是一种什么样的结构：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</div><div class="line">    K key; </div><div class="line">    V value;</div><div class="line">    Entry&lt;K,V&gt; left = <span class="keyword">null</span>;  <span class="comment">// 左子树</span></div><div class="line">    Entry&lt;K,V&gt; right = <span class="keyword">null</span>;  <span class="comment">// 右子树</span></div><div class="line">    Entry&lt;K,V&gt; parent;  <span class="comment">// 父节点</span></div><div class="line">    <span class="keyword">boolean</span> color = BLACK;  <span class="comment">// 本节点的颜色(红黑两种)</span></div><div class="line">    </div><div class="line">    Entry(K key, V value, Entry&lt;K,V&gt; parent) &#123;</div><div class="line">        <span class="keyword">this</span>.key = key;</div><div class="line">        <span class="keyword">this</span>.value = value;</div><div class="line">        <span class="keyword">this</span>.parent = parent;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="类定义"><a href="#类定义" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TreeMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">AbstractMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">NavigableMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;, <span class="title">Cloneable</span>, <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span></span></div></pre></td></tr></table></figure>
+<h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>private final Comparator&lt;? super K&gt;</td>
+<td>comparator</td>
+<td>排序比较类</td>
+</tr>
+<tr>
+<td>private transient Entry\<k,v></k,v></td>
+<td>root = null</td>
+<td>红黑树的根节点</td>
+</tr>
+<tr>
+<td>private transient int</td>
+<td>size = 0</td>
+<td>entry数量</td>
+</tr>
+<tr>
+<td>private transient int</td>
+<td>modCount = 0</td>
+<td>记录改变结构的次数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="方法讲解-只讲解put和get操作"><a href="#方法讲解-只讲解put和get操作" class="headerlink" title="方法讲解-只讲解put和get操作"></a>方法讲解-只讲解put和get操作</h3><blockquote>
+<p><strong>添加元素 put()</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* 1. 首先判断根元素是否为空,也就是当前put进来的entry是否是第一次操作</span></div><div class="line"><span class="comment">* 2. 如果是第一次put,则直接创建entry并赋值给root</span></div><div class="line"><span class="comment">* 3. 如果不是第一次put(也就是root不为null),则获取比较器</span></div><div class="line"><span class="comment">* 4. 将新增的key从根节点开始比较,</span></div><div class="line"><span class="comment">*    小于根节点则继续跟当前节点的左子树的根节点比较;</span></div><div class="line"><span class="comment">*    大于根节点则继续跟当前节点的右子树的根节点比较;</span></div><div class="line"><span class="comment">*    如果等于当前节点则直接用value替换原来的值并返回原来的值</span></div><div class="line"><span class="comment">* 5. 最后如果不是执行的替换操作,而是执行的插入则要重新调整树的结构,</span></div><div class="line"><span class="comment">*    让新树符合红黑树的规则.</span></div><div class="line"><span class="comment">**/</span></div><div class="line"><span class="function"><span class="keyword">public</span> V <span class="title">put</span><span class="params">(K key, V value)</span> </span>&#123;</div><div class="line">    Entry&lt;K,V&gt; t = root;</div><div class="line">    <span class="keyword">if</span> (t == <span class="keyword">null</span>) &#123;</div><div class="line">        compare(key, key); <span class="comment">// type (and possibly null) check</span></div><div class="line"></div><div class="line">        root = <span class="keyword">new</span> Entry&lt;&gt;(key, value, <span class="keyword">null</span>);</div><div class="line">        size = <span class="number">1</span>;</div><div class="line">        modCount++;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">int</span> cmp;</div><div class="line">    Entry&lt;K,V&gt; parent;</div><div class="line">    <span class="comment">// split comparator and comparable paths</span></div><div class="line">    Comparator&lt;? <span class="keyword">super</span> K&gt; cpr = comparator;</div><div class="line">    <span class="keyword">if</span> (cpr != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">do</span> &#123;</div><div class="line">            parent = t;</div><div class="line">            cmp = cpr.compare(key, t.key);</div><div class="line">            <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)</div><div class="line">                t = t.left;</div><div class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>)</div><div class="line">                t = t.right;</div><div class="line">            <span class="keyword">else</span></div><div class="line">                <span class="keyword">return</span> t.setValue(value);</div><div class="line">        &#125; <span class="keyword">while</span> (t != <span class="keyword">null</span>);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">if</span> (key == <span class="keyword">null</span>)</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</div><div class="line">        Comparable&lt;? <span class="keyword">super</span> K&gt; k = (Comparable&lt;? <span class="keyword">super</span> K&gt;) key;</div><div class="line">        <span class="keyword">do</span> &#123;</div><div class="line">            parent = t;</div><div class="line">            cmp = k.compareTo(t.key);</div><div class="line">            <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)</div><div class="line">                t = t.left;</div><div class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>)</div><div class="line">                t = t.right;</div><div class="line">            <span class="keyword">else</span></div><div class="line">                <span class="keyword">return</span> t.setValue(value);</div><div class="line">        &#125; <span class="keyword">while</span> (t != <span class="keyword">null</span>);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 遍历完成,找到新增节点放置的位置</span></div><div class="line">    Entry&lt;K,V&gt; e = <span class="keyword">new</span> Entry&lt;&gt;(key, value, parent);</div><div class="line">    <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)  <span class="comment">// 比父节点小,放在左子树</span></div><div class="line">        parent.left = e;</div><div class="line">    <span class="keyword">else</span>   <span class="comment">// 大,放在右子树</span></div><div class="line">        parent.right = e;</div><div class="line">    </div><div class="line">    <span class="comment">// 重新调整树使之符合红黑树的规则</span></div><div class="line">    <span class="comment">// (此过程比较复杂,需了解红黑树算法规则,在此暂不分析)</span></div><div class="line">    fixAfterInsertion(e);</div><div class="line">    size++;</div><div class="line">    modCount++;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>获取元素get()</strong><br>TreeMap的get()操作就是通过比较循环获取左右子树比较的一个过程，直到找到对应的节点</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</div><div class="line">    Entry&lt;K,V&gt; p = getEntry(key);</div><div class="line">    <span class="keyword">return</span> (p==<span class="keyword">null</span> ? <span class="keyword">null</span> : p.value);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">final</span> Entry&lt;K,V&gt; <span class="title">getEntry</span><span class="params">(Object key)</span> </span>&#123;</div><div class="line">    <span class="comment">// Offload comparator-based version for sake of performance</span></div><div class="line">    <span class="keyword">if</span> (comparator != <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">return</span> getEntryUsingComparator(key);</div><div class="line">    <span class="keyword">if</span> (key == <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</div><div class="line">    Comparable&lt;? <span class="keyword">super</span> K&gt; k = (Comparable&lt;? <span class="keyword">super</span> K&gt;) key;</div><div class="line">    Entry&lt;K,V&gt; p = root;</div><div class="line">    <span class="keyword">while</span> (p != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">int</span> cmp = k.compareTo(p.key);</div><div class="line">        <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)</div><div class="line">            p = p.left;</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>)</div><div class="line">            p = p.right;</div><div class="line">        <span class="keyword">else</span></div><div class="line">            <span class="keyword">return</span> p;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">final</span> Entry&lt;K,V&gt; <span class="title">getEntryUsingComparator</span><span class="params">(Object key)</span> </span>&#123;</div><div class="line">    K k = (K) key;</div><div class="line">    Comparator&lt;? <span class="keyword">super</span> K&gt; cpr = comparator;</div><div class="line">    <span class="keyword">if</span> (cpr != <span class="keyword">null</span>) &#123;</div><div class="line">        Entry&lt;K,V&gt; p = root;</div><div class="line">        <span class="keyword">while</span> (p != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">int</span> cmp = cpr.compare(k, p.key);</div><div class="line">            <span class="keyword">if</span> (cmp &lt; <span class="number">0</span>)</div><div class="line">                p = p.left;</div><div class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (cmp &gt; <span class="number">0</span>)</div><div class="line">                p = p.right;</div><div class="line">            <span class="keyword">else</span></div><div class="line">                <span class="keyword">return</span> p;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/TreeMap/" data-id="cj7o7n60g000pewaimg8hv2rl" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/util/Timer" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/Timer/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.485Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-Timer类"><a href="#java源码解析-Timer类" class="headerlink" title="java源码解析-Timer类"></a>java源码解析-Timer类</h2><p>Timer是jdk1.3中自带的定时任务框架系统。一个调度定时任务的工具线程类。可以执行一个只调度一次的任务也可以重复调度一个一定间隔时间的任务。<br>一个Timer实例就是一个调度任务调度线程。当任务队列中的所有定时任务被执行完毕，这个定时调度的线程就会自动终止。如果你想让这个线程快速终止的话， 那么你可以直接调用cancel()方法可以让调度线程快速终止。<br>Timer类是线程安全类：多个线程可以共享一个Timer实例。同时这个类不保证准时调度任务，因为他是用的Object.wait(long)方法。<br>Timer类能够支持大量的并行调度任务(成百上千没问题)，在Timer内部存储每个调度任务的结构是以==平衡二叉树堆(<a href="http://baike。baidu。com/view/157305。htm" target="_blank" rel="external">堆排序</a>)==的结构来保存每个任务对象的，这种存储结构能在log(n)的时间复杂度内快速的查询。<br>jdk1.5中提供了比Timer跟高效的定时调度线程池类ScheduledThreadPoolExecutor  </p>
+<hr>
+<h3 id="类定义"><a href="#类定义" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">public class Timer &#123;&#125;</div></pre></td></tr></table></figure>
+<h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>private final TaskQueue</td>
+<td>queue = new TaskQueue()</td>
+<td>任务队列</td>
+</tr>
+<tr>
+<td>private final TimerThread</td>
+<td>thread = new TimerThread(queue)</td>
+<td>定时调度任务的线程类</td>
+</tr>
+<tr>
+<td>private final Object</td>
+<td>threadReaper</td>
+<td>用于终止定时调度线程的</td>
+</tr>
+<tr>
+<td>private final static AtomicInteger</td>
+<td>nextSerialNumber = new AtomicInteger(0)</td>
+<td>用于生成定时调度线程的名字</td>
+</tr>
+</tbody>
+</table>
+<h3 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h3><p>当我们实例化一个Timer类之后， 定时调度的线程就会启动start()一直等待(queue.wait())任务队列中加入任务<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">Timer</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>(<span class="string">"Timer-"</span> + serialNumber());</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">Timer</span><span class="params">(<span class="keyword">boolean</span> isDaemon)</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>(<span class="string">"Timer-"</span> + serialNumber(), isDaemon);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">Timer</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">    thread.setName(name);</div><div class="line">    thread.start();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">Timer</span><span class="params">(String name, <span class="keyword">boolean</span> isDaemon)</span> </span>&#123;</div><div class="line">    thread.setName(name);</div><div class="line">    thread.setDaemon(isDaemon);</div><div class="line">    thread.start();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="核心方法"><a href="#核心方法" class="headerlink" title="核心方法"></a>核心方法</h3><p>Timer中有多个重载的public void schedule()方法，但是这些重载的方法只会做一些参数的判断，并都最终调度的sched()方法，所以下面将讲解sched()方法。</p>
+<blockquote>
+<p><strong>sched()方法</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">sched</span><span class="params">(TimerTask task, <span class="keyword">long</span> time, <span class="keyword">long</span> period)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (time &lt; <span class="number">0</span>)</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Illegal execution time."</span>);</div><div class="line"></div><div class="line">    <span class="comment">// Constrain value of period sufficiently to prevent numeric</span></div><div class="line">    <span class="comment">// overflow while still being effectively infinitely large.</span></div><div class="line">    <span class="keyword">if</span> (Math.abs(period) &gt; (Long.MAX_VALUE &gt;&gt; <span class="number">1</span>))</div><div class="line">        period &gt;&gt;= <span class="number">1</span>;</div><div class="line">    </div><div class="line">    <span class="comment">// 获取任务队列的锁(同一个线程多次获取这个锁并不会被阻塞，不同线程获取时才可能被阻塞)</span></div><div class="line">    <span class="keyword">synchronized</span>(queue) &#123;</div><div class="line">        <span class="comment">// 如果定时调度线程已经终止了，则抛出异常结束</span></div><div class="line">        <span class="keyword">if</span> (!thread.newTasksMayBeScheduled)</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Timer already cancelled."</span>);</div><div class="line">        </div><div class="line">        <span class="comment">// 再获取定时任务对象的锁(为什么还要再加这个锁呢?想不清)</span></div><div class="line">        <span class="keyword">synchronized</span>(task.lock) &#123;</div><div class="line">            <span class="comment">// 判断线程的状态，防止多线程同时调度到一个任务时多次被加入任务队列</span></div><div class="line">            <span class="keyword">if</span> (task.state != TimerTask.VIRGIN)</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(</div><div class="line">                    <span class="string">"Task already scheduled or cancelled"</span>);</div><div class="line">                    </div><div class="line">            <span class="comment">// 初始化定时任务的下次执行时间</span></div><div class="line">            task.nextExecutionTime = time;  </div><div class="line">            <span class="comment">// 重复执行的间隔时间</span></div><div class="line">            task.period = period;  </div><div class="line">            <span class="comment">// 将定时任务的状态由TimerTask.VIRGIN(一个定时任务的初始化状态)设置为TimerTask.SCHEDULED</span></div><div class="line">            task.state = TimerTask.SCHEDULED;  </div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="comment">// 将任务加入任务队列</span></div><div class="line">        queue.add(task);</div><div class="line">        <span class="comment">// 如果当前加入的任务是需要第一个被执行的(也就是他的下一次执行时间离现在最近)</span></div><div class="line">        <span class="comment">// 则唤醒等待queue的线程(对应到上面提到的queue.wait())</span></div><div class="line">        <span class="keyword">if</span> (queue.getMin() == task)</div><div class="line">            queue.notify();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>cancel()终止定时线程</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cancel</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="comment">// 从这里可以知道，如果调用了Timer的cancel()方法也不会立刻就终止定时调度线程</span></div><div class="line">    <span class="comment">// 因为这里需要获取任务队列的锁，如果TimerThread占用了queue的锁，也就是说queue并没有在wait()，</span></div><div class="line">    <span class="comment">// 那么cancel就不会立刻终止定时线程， 他需要等待TimerThread定时线程释放掉queue的锁</span></div><div class="line">    <span class="comment">// 也就是说如果queue队列中有定时任务存在，那么cancel就不会终止定时线程，他需要等到queue中的定时任务被清空</span></div><div class="line">    <span class="comment">// 用一句话说: cancel会等到所有定时任务执行完后立刻终止定时线程</span></div><div class="line">    <span class="keyword">synchronized</span>(queue) &#123;</div><div class="line">        thread.newTasksMayBeScheduled = <span class="keyword">false</span>;</div><div class="line">        queue.clear();</div><div class="line">        queue.notify();  <span class="comment">// In case queue was already empty.</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>purge()方法</strong><br>从队列中移除所有状态为cancelled的任务，调用这个方法并不会影响timer的行为，但是一般应用不会调用这个方法，除非有很多被cancelled的任务；同时调用这个方法也会比较消耗时间。</p>
+</blockquote>
+<hr>
+<h2 id="TimerThread类"><a href="#TimerThread类" class="headerlink" title="TimerThread类"></a>TimerThread类</h2><p>TimerThread是Timer中定时调度线程类的定义，这个类会做为一个线程一直运行来执行Timer中任务队列中的任务。</p>
+<h3 id="类定义-1"><a href="#类定义-1" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">TimerThread</span> <span class="keyword">extends</span> <span class="title">Thread</span></span></div></pre></td></tr></table></figure>
+<h3 id="成员变量-1"><a href="#成员变量-1" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>boolean</td>
+<td>newTasksMayBeScheduled = true</td>
+<td>用于控制当queue任务队列为空时，定时线程是否应该立刻终止(false立刻终止)</td>
+</tr>
+<tr>
+<td>private TaskQueue</td>
+<td>queue</td>
+<td>任务队列(这个当TimerThread在Timer中被实例化时会传入)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><blockquote>
+<p><strong>run()方法</strong><br>定时线程的执行方法，它会调用TimerThread类的mainLoop()方法。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        mainLoop();</div><div class="line">    &#125; <span class="keyword">finally</span> &#123;</div><div class="line">        <span class="comment">// Someone killed this Thread， behave as if Timer cancelled</span></div><div class="line">        <span class="keyword">synchronized</span>(queue) &#123;</div><div class="line">            newTasksMayBeScheduled = <span class="keyword">false</span>;</div><div class="line">            queue.clear();  <span class="comment">// Eliminate obsolete references</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>mainLoop()方法</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">mainLoop</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="comment">// 无限循环来控制等待任务队列中加入任务</span></div><div class="line">    <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            TimerTask task;</div><div class="line">            <span class="keyword">boolean</span> taskFired;</div><div class="line">            <span class="comment">// 获取任务队列的锁</span></div><div class="line">            <span class="keyword">synchronized</span>(queue) &#123;</div><div class="line">                <span class="comment">// 如果任务队列为空，并且线程没有被cancel()</span></div><div class="line">                <span class="comment">// 则线程等待queue锁，queue.wait()方法会释放获得的queue锁</span></div><div class="line">                <span class="comment">// 这样在Timer中sched()方法才能够获取到queue锁</span></div><div class="line">                <span class="keyword">while</span> (queue.isEmpty() &amp;&amp; newTasksMayBeScheduled)</div><div class="line">                    queue.wait();</div><div class="line">                </div><div class="line">                <span class="comment">// 如果任务队列为空了，那么就退出循环</span></div><div class="line">                <span class="comment">// 这种情况要发生，那么必须newTasksMayBeScheduled=false</span></div><div class="line">                <span class="comment">// 因为如果newTasksMayBeScheduled=true，就会在上面的while循环中执行queue.wait()，使线程进入等待状态</span></div><div class="line">                <span class="comment">// 等线程从等待状态恢复时，说明queue.notify()方法被调用了，</span></div><div class="line">                <span class="comment">// 而观察Timer代码这只可能在sched()方法中发生， 这个方法会在队列queue中add任务而使queue不再为空</span></div><div class="line">                <span class="keyword">if</span> (queue.isEmpty())</div><div class="line">                    <span class="keyword">break</span>; </div><div class="line"></div><div class="line">                <span class="keyword">long</span> currentTime, executionTime;</div><div class="line">                <span class="comment">// 得到任务队列中的位置1的任务</span></div><div class="line">                task = queue.getMin();</div><div class="line">                <span class="comment">// 获取任务的锁</span></div><div class="line">                <span class="keyword">synchronized</span>(task.lock) &#123;</div><div class="line">                    <span class="comment">// 如果任务被取消了(TimerTask.cancel()方法被调用)</span></div><div class="line">                    <span class="comment">// 将任务从队列中移除，继续重新循环</span></div><div class="line">                    <span class="keyword">if</span> (task.state == TimerTask.CANCELLED) &#123;</div><div class="line">                        queue.removeMin();</div><div class="line">                        <span class="keyword">continue</span>;  <span class="comment">// No action required， poll queue again</span></div><div class="line">                    &#125;</div><div class="line">                    </div><div class="line">                    <span class="comment">// 获取任务的执行时间</span></div><div class="line">                    currentTime = System.currentTimeMillis();</div><div class="line">                    executionTime = task.nextExecutionTime;</div><div class="line">                    </div><div class="line">                    <span class="comment">// 计算任务是否应该被触发</span></div><div class="line">                    <span class="keyword">if</span> (taskFired = (executionTime&lt;=currentTime)) &#123;</div><div class="line">                        <span class="comment">// 任务应该被触发，并且不是重复任务</span></div><div class="line">                        <span class="comment">// 将任务从队列中移除并修改任务的执行状态</span></div><div class="line">                        <span class="keyword">if</span> (task.period == <span class="number">0</span>) &#123; <span class="comment">// Non-repeating， remove</span></div><div class="line">                            queue.removeMin();</div><div class="line">                            task.state = TimerTask.EXECUTED;</div><div class="line">                        &#125; <span class="keyword">else</span> &#123; <span class="comment">// 任务是重复执行任务，计算任务下一次应该被执行的时间，并重新排序任务队列</span></div><div class="line">                            queue.rescheduleMin(</div><div class="line">                              task.period&lt;<span class="number">0</span> ? currentTime   - task.period</div><div class="line">                                            : executionTime + task.period);</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                <span class="comment">// 如果任务不应被触发，让其等待一定时间后执行</span></div><div class="line">                <span class="keyword">if</span> (!taskFired) <span class="comment">// Task hasn't yet fired; wait</span></div><div class="line">                    queue.wait(executionTime - currentTime);</div><div class="line">            &#125;</div><div class="line">            <span class="comment">// 任务应该被触发，让任务执行</span></div><div class="line">            <span class="keyword">if</span> (taskFired)  <span class="comment">// Task fired; run it, holding no locks</span></div><div class="line">                task.run();  <span class="comment">// 任务也是一个线程</span></div><div class="line">        &#125; <span class="keyword">catch</span>(InterruptedException e) &#123;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<hr>
+<h2 id="TaskQueue类"><a href="#TaskQueue类" class="headerlink" title="TaskQueue类"></a>TaskQueue类</h2><p>TaskQueue是一个任务队列类，用于保存定时器需要执行的定时任务，这个队列是一个数组，只不过是一种平衡二叉树堆结构的数组。至于这个树堆是怎么样一种结构，还请执行百度。只能说这种结构总是保证值最小或者是值最大的在数组中的第一个位置(这个类中始终是nextExecuteTime最小的在第一个位置)，没当队列有增加，删除操作就会重新调整队列结构，让nextExecuteTime值最小的放在第一个位置。</p>
+<hr>
+<h2 id="TimerTask类"><a href="#TimerTask类" class="headerlink" title="TimerTask类"></a>TimerTask类</h2><p>TimerTask任务类，继承自Thread，如果我们要用Timer来做定时任务，那么我们必须继承TimerTask类，并且实现run()方法(具体任务代码)。如果要取消一个任务的调度，则调用TimerTask.cancel()方法将取消任务的执行。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/Timer/" data-id="cj7o7n60h000qewai7fxyprz9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/util/Queue-ArrayDeque" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.482Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-Queue类"><a href="#java源码解析-Queue类" class="headerlink" title="java源码解析-Queue类"></a>java源码解析-Queue类</h2><p>Java中队列接口，队列集合设计的主要目的是来存储元素之间有优先处理权的元素。Queue接口处了Collection接口中定义的操作之外，另外增添了具有队列特色的操作。比如：</p>
+<ul>
+<li>remove()- 删除队列的头元素， 如果队列是空，则抛出异常</li>
+<li>poll()- 删除队列的头元素，如果队列是空，不会抛出异常返回null</li>
+<li>element()- 返回队列的头元素，如果队列是空，抛出异常</li>
+<li>peek()- 返回队列的头元素，如果队列是空，不会抛出异常返回null</li>
+<li>add()- 如果队列已满会抛出异常表示插入失败</li>
+<li>offer()- 通过抛出异常来表示插入异常</li>
+</ul>
+<p>java中提供了ArrayDeque和LinkedList两个类来实现队列。<br>ArrayDeque以数组的方式实现双向队列，LinkedList以链表方式实现队列。<br>java中队列的实现是有点混乱的，如果你想要这两个类实现我们队列的那种特性，那么必须要用好配对的方法，比如在ArrayDeque中add()方法跟remove()方法要配套使用才会有那种先进先出的机制等，而在LinkedList中，add()和remove()方法是list的特性。</p>
+<p>在ArrayDeque中，removeFirst()方法并不一定是移除你第一次添加的元素，他移除的只是head指向的索引处的元素。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/Queue-ArrayDeque/" data-id="cj7o7n60e000newaio7gemkca" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/util/LinkedList" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/LinkedList/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.480Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-LinkedList类"><a href="#java源码解析-LinkedList类" class="headerlink" title="java源码解析-LinkedList类"></a>java源码解析-LinkedList类</h2><p><strong>类定义</strong>  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LinkedList</span>&lt;<span class="title">E</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">AbstractSequentialList</span>&lt;<span class="title">E</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">List</span>&lt;<span class="title">E</span>&gt;, <span class="title">Deque</span>&lt;<span class="title">E</span>&gt;, <span class="title">Cloneable</span>, <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span></span></div></pre></td></tr></table></figure>
+<p>从类的定义我们可以直观的知道LinkedList拥有List和Deque(双向队列)的双重特性。也就是说LinkedList是一种双向链表的实现方式，大家都知道链表的一个基本实现方式是通过每个节点之间前后指向关系来体现的，在Java中也一样，LinkedList拥有一个内部实现类Node，通过Node的next，prev属性连保持各个节点之间的联系。下面我将从我的理解，详细讲解LinkedList的实现方式。<br><strong>效率：</strong> 插入都快速，查找都缓慢(下标查找方式时，会使用折半再查找的方式)</p>
+<h3 id="成员变量属性"><a href="#成员变量属性" class="headerlink" title="成员变量属性"></a>成员变量属性</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>transient int</td>
+<td>size</td>
+<td>默认的初始化数组存储空间大小</td>
+</tr>
+<tr>
+<td>transient Node\<e></e></td>
+<td>first</td>
+<td>指向链表的第一个节点</td>
+</tr>
+<tr>
+<td>transient Node\<e></e></td>
+<td>last</td>
+<td>指向链表的最后一个节点</td>
+</tr>
+<tr>
+<td>protected transient int</td>
+<td>modCount</td>
+<td>继承自AbstractList,记录size变化的次</td>
+</tr>
+</tbody>
+</table>
+<p><strong>内部类Node结构</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">E</span>&gt; </span>&#123;</div><div class="line">    E item;</div><div class="line">    Node&lt;E&gt; next;</div><div class="line">    Node&lt;E&gt; prev;</div><div class="line"></div><div class="line">    Node(Node&lt;E&gt; prev, E element, Node&lt;E&gt; next) &#123;</div><div class="line">        <span class="keyword">this</span>.item = element;</div><div class="line">        <span class="keyword">this</span>.next = next;</div><div class="line">        <span class="keyword">this</span>.prev = prev;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Node的结构很简单，就是维护一个当前节点的值，next指向下一个节点，prev指向前一个节点</p>
+<h3 id="队列方法"><a href="#队列方法" class="headerlink" title="队列方法"></a>队列方法</h3><blockquote>
+<p><strong>public void addFirst(E e)</strong><br>前端插入数据</p>
+<p><strong>public void addLast(E e)</strong><br>后端插入数据</p>
+<p><strong>根据下标查找会折半</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> E <span class="title">get</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</div><div class="line">    checkElementIndex(index);</div><div class="line">    <span class="keyword">return</span> node(index).item;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function">Node&lt;E&gt; <span class="title">node</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</div><div class="line">    <span class="comment">// assert isElementIndex(index);</span></div><div class="line"></div><div class="line">    <span class="keyword">if</span> (index &lt; (size &gt;&gt; <span class="number">1</span>)) &#123;</div><div class="line">        Node&lt;E&gt; x = first;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; index; i++)</div><div class="line">            x = x.next;</div><div class="line">        <span class="keyword">return</span> x;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        Node&lt;E&gt; x = last;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = size - <span class="number">1</span>; i &gt; index; i--)</div><div class="line">            x = x.prev;</div><div class="line">        <span class="keyword">return</span> x;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>查看源码发现并没有难点问题需要记录，故在此不再赘述，需要注意的地方在ArrayList中已说明</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/LinkedList/" data-id="cj7o7n60c000lewaiv2mob1ub" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/util/LinkedHashSet" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/LinkedHashSet/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.477Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-LinkedHashSet类"><a href="#java源码解析-LinkedHashSet类" class="headerlink" title="java源码解析-LinkedHashSet类"></a>java源码解析-LinkedHashSet类</h2><p>LinkedHashSet是内部通过LinkedHashMap实现的,详细请参考我的LinkedHashMap讲解</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/LinkedHashSet/" data-id="cj7o7n60d000mewaiasq8nbnd" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/util/LinkedHashMap" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/LinkedHashMap/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.475Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-LinkedHashMap类"><a href="#java源码解析-LinkedHashMap类" class="headerlink" title="java源码解析-LinkedHashMap类"></a>java源码解析-LinkedHashMap类</h2><p>LinkedHashMap是继承自HashMap，并实现Map接口。所以他拥有HashMap的结构，同时他又有LinkedList的结构(双向链表的结构-环形的)。由于LinkedHashMap中维护了一个双向链表结构，所以在LinkedHashMap中的某些遍历操作是直接针对的双向链表的(例如：contains操作,Iterator操作)。</p>
+<p>下面是LinkedHashMap中entry结构:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 继承自HashMap中的entry,并增加了两个额外的属性</span></div><div class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">HashMap</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</div><div class="line">    <span class="comment">// These fields comprise the doubly linked list used for iteration.</span></div><div class="line">    Entry&lt;K,V&gt; before, after;</div><div class="line"></div><div class="line">    Entry(<span class="keyword">int</span> hash, K key, V value, HashMap.Entry&lt;K,V&gt; next) &#123;</div><div class="line">        <span class="keyword">super</span>(hash, key, value, next);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="类定义"><a href="#类定义" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LinkedHashMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">HashMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">Map</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;</span></div></pre></td></tr></table></figure>
+<h3 id="成员变量-拥有HashMap中所有的非私有成员变量"><a href="#成员变量-拥有HashMap中所有的非私有成员变量" class="headerlink" title="成员变量(拥有HashMap中所有的非私有成员变量)"></a>成员变量(拥有HashMap中所有的非私有成员变量)</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>private transient Entry\<k,v></k,v></td>
+<td>header</td>
+<td>链表结构的头结点(hash值取的-1)</td>
+</tr>
+<tr>
+<td>private final boolean</td>
+<td>accessOrder</td>
+<td>是否让链表随机访问(true随机get方法的影响,false就是插入顺序)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><blockquote>
+<p><strong>初始化方法init()</strong><br>在构造函数中被调用，会初始化链表的头结点header</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</div><div class="line">    header = <span class="keyword">new</span> Entry&lt;&gt;(-<span class="number">1</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</div><div class="line">    header.before = header.after = header;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>添加元素put()</strong><br>继承自HashMap方法，且没有重写，所以它的数组结构跟HashMap是一样的：只是它重写了addEntry()和createEntry()方法(这两个方法会在put的时候被调用到)，这两个方法会增多一个双向链表的结构。下面讲解：</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">addEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</div><div class="line">    <span class="comment">// 调用父类HashMap中的addEntry()方法(会调用createEntry()方法)</span></div><div class="line">    <span class="keyword">super</span>.addEntry(hash, key, value, bucketIndex); </div><div class="line"></div><div class="line">    <span class="comment">// Remove eldest entry if instructed</span></div><div class="line">    Entry&lt;K,V&gt; eldest = header.after;</div><div class="line">    <span class="comment">// 移除老的Entry(不会执行,除非子类重写removeEldestEntry方法)</span></div><div class="line">    <span class="keyword">if</span> (removeEldestEntry(eldest)) &#123;</div><div class="line">        removeEntryForKey(eldest.key);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">createEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</div><div class="line">    HashMap.Entry&lt;K,V&gt; old = table[bucketIndex];</div><div class="line">    Entry&lt;K,V&gt; e = <span class="keyword">new</span> Entry&lt;&gt;(hash, key, value, old);</div><div class="line">    table[bucketIndex] = e;</div><div class="line">    </div><div class="line">    <span class="comment">// 双向链表的操作,在header节点前面链接e节点</span></div><div class="line">    <span class="comment">// 所以每次添加的新的entry,在双向链表中的位置始终是在header前面</span></div><div class="line">    e.addBefore(header);</div><div class="line">    size++;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* Entry类中的addBefore()方法</span></div><div class="line"><span class="comment">* 在existingEntry节点前增加当前调用方法的实例节点</span></div><div class="line"><span class="comment">**/</span></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">addBefore</span><span class="params">(Entry&lt;K,V&gt; existingEntry)</span> </span>&#123;</div><div class="line">    after  = existingEntry;</div><div class="line">    before = existingEntry.before;</div><div class="line">    before.after = <span class="keyword">this</span>;</div><div class="line">    after.before = <span class="keyword">this</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>获取元素get()</strong><br>跟HashMap是一样的，直接调用的父类HashMap中的getEntry()方法。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</div><div class="line">    Entry&lt;K,V&gt; e = (Entry&lt;K,V&gt;)getEntry(key);</div><div class="line">    <span class="keyword">if</span> (e == <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    </div><div class="line">    <span class="comment">// 增加随机访问性</span></div><div class="line">    e.recordAccess(<span class="keyword">this</span>);</div><div class="line">    <span class="keyword">return</span> e.value;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment">* Entry类中的方法</span></div><div class="line"><span class="comment">**/</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">recordAccess</span><span class="params">(HashMap&lt;K,V&gt; m)</span> </span>&#123;</div><div class="line">    LinkedHashMap&lt;K,V&gt; lm = (LinkedHashMap&lt;K,V&gt;)m;</div><div class="line">    <span class="comment">// 如果允许随机访问则移除此节点,再把该节点重新放在双向链表的header前面</span></div><div class="line">    <span class="keyword">if</span> (lm.accessOrder) &#123;</div><div class="line">        lm.modCount++;</div><div class="line">        remove();</div><div class="line">        addBefore(lm.header);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/LinkedHashMap/" data-id="cj7o7n60b000kewaid22xmb85" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/util/HashTable" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/HashTable/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.472Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-HashTable类"><a href="#java源码解析-HashTable类" class="headerlink" title="java源码解析-HashTable类"></a>java源码解析-HashTable类</h2><p>HashTable跟HashMap的作用是一样的，基本的实现方式也差不多，所以这一讲我不会再对代码进行详细的分析。只不过HashTable是线程同步的。所有的实例方法都是synchronized的。同时HashTable中存储的键值对是不允许为空的(键和值都不能为空)，所以如果put进的键值含有null值，将会抛出空指针异常。同时两个针对key做的hash算法是不一样的，根据hash值来计算在数组中的索引算法也是不一样的。由于HashTable继承自Dictionary类，所以他有额外的枚举遍历方法。</p>
+<h3 id="HashTable跟HashMap对比"><a href="#HashTable跟HashMap对比" class="headerlink" title="HashTable跟HashMap对比:"></a>HashTable跟HashMap对比:</h3><table>
+<thead>
+<tr>
+<th>比较项</th>
+<th>HashTable</th>
+<th>HashMap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>线程</td>
+<td>多线程安全的</td>
+<td>线程不安全的</td>
+</tr>
+<tr>
+<td>键值</td>
+<td>均不允许为null</td>
+<td>可以为null</td>
+</tr>
+<tr>
+<td>继承</td>
+<td>Dictionary</td>
+<td>AbstractMap</td>
+</tr>
+</tbody>
+</table>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>从代码结构上可以看的出，HastTable在方法定义细化上没有HashMap做的，HashMap的每个方法的功能做的都很细致，分的很细。不过在迭代器的实现上面HashTable做的比HashMap要perfect。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/HashTable/" data-id="cj7o7n60f000oewaiyd1vecl9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/util/HashSet" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/HashSet/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.468Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-HashSet类"><a href="#java源码解析-HashSet类" class="headerlink" title="java源码解析-HashSet类"></a>java源码解析-HashSet类</h2><p>Java中set集合接口：用于存储没有重复元素(equals()和hashCode())的集合，可以存储null元素。</p>
+<p>下面详细介绍HashSet<br>HashSet实现方式：通过hash索引的方式来存储和取值，内部通过维护一个HashMap来实现的，我们知道HashMap的key是唯一的不能重复的，并且也是通过hash方式来索引的，这一点特性恰好是跟HashSet不谋而合，所以HashSet是直接通过HashMap来实现的。他的所有操作都是间接调用的HashMap方法来实现的</p>
+<h3 id="类定义"><a href="#类定义" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HashSet</span>&lt;<span class="title">E</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">AbstractSet</span>&lt;<span class="title">E</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">Set</span>&lt;<span class="title">E</span>&gt;, <span class="title">Cloneable</span>, <span class="title">java</span>.<span class="title">io</span>.<span class="title">Serializable</span></span></div></pre></td></tr></table></figure>
+<h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>private transient HashMap\<e,object></e,object></td>
+<td>map</td>
+<td>内部维护的map</td>
+</tr>
+<tr>
+<td>private static final Object</td>
+<td>PRESENT = new Object()</td>
+<td>存放在map中的值对象,做占位而已</td>
+</tr>
+</tbody>
+</table>
+<h3 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashSet</span><span class="params">()</span> </span>&#123;</div><div class="line">    map = <span class="keyword">new</span> HashMap&lt;&gt;();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashSet</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>&#123;</div><div class="line">    map = <span class="keyword">new</span> HashMap&lt;&gt;(initialCapacity);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>只列举几个方法，他的具体实现请参考HashMap讲解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Iterator&lt;E&gt; <span class="title">iterator</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> map.keySet().iterator();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">size</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> map.size();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">contains</span><span class="params">(Object o)</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> map.containsKey(o);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/HashSet/" data-id="cj7o7n607000jewaipmas6flm" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java/源码学习/util/HashMap" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/HashMap/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.465Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-HashMap类"><a href="#java源码解析-HashMap类" class="headerlink" title="java源码解析-HashMap类"></a>java源码解析-HashMap类</h2><p>Map是java中用于存储建值对的一种数据结构方式。键不能重复，每一个键可以匹配多个值(也就是一个链表)。这个接口是用于替换Dictionary这个抽象类的。</p>
+<p>HashMap用于存储\<key, value="">键值对，其中key可以为null，同时他的key存放索引方式是通过hash方式来实现的，所以他能快速的定位到你需要的key处。在HashMap内部是存放的一个Entry的数组。<br>Entry的定义如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">Entry(<span class="keyword">int</span> h, K k, V v, Entry&lt;K,V&gt; n) &#123;</div><div class="line">    value = v;</div><div class="line">    next = n;</div><div class="line">    key = k;</div><div class="line">    hash = h;</div><div class="line">&#125;</div></pre></td></tr></table></figure></key,></p>
+<h3 id="类定义"><a href="#类定义" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HashMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">extends</span> <span class="title">AbstractMap</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;</span></div><div class="line"><span class="class">    <span class="keyword">implements</span> <span class="title">Map</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt;, <span class="title">Cloneable</span>, <span class="title">Serializable</span></span></div></pre></td></tr></table></figure>
+<h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>transient Entry\<k,v>[] table</k,v></td>
+<td>table</td>
+<td>存储数据的内部数组</td>
+</tr>
+<tr>
+<td>static final Entry&lt;?,?&gt;[]</td>
+<td>EMPTY_TABLE</td>
+<td>空数组，用于初始化table</td>
+</tr>
+<tr>
+<td>static final int</td>
+<td>MAXIMUM_CAPACITY = 1 &lt;&lt; 30</td>
+<td>map存放数据最大容量</td>
+</tr>
+<tr>
+<td>static final int</td>
+<td>DEFAULT_INITIAL_CAPACITY = 16</td>
+<td>map的默认初始化容量</td>
+</tr>
+<tr>
+<td>transient int</td>
+<td>size</td>
+<td>map的存储数据大小，并不是table的length，而是Entry的数量</td>
+</tr>
+<tr>
+<td>static final float</td>
+<td>DEFAULT_LOAD_FACTOR = 0.75f</td>
+<td>默认扩容因子，当$\frac{size}{capacity} \gt 0.75$时m，ap自动扩容同时执行rehash</td>
+</tr>
+<tr>
+<td>int</td>
+<td>threshold</td>
+<td>map要扩容到的大小</td>
+</tr>
+<tr>
+<td>final float</td>
+<td>loadFactor</td>
+<td>map扩容因子，通过构造方式传入进来</td>
+</tr>
+<tr>
+<td>transient int</td>
+<td>modCount</td>
+<td>记录map的size变化次数，跟list中的作用是一样的</td>
+</tr>
+<tr>
+<td>transient int</td>
+<td>hashSeed = 0</td>
+<td>跟计算map的key索引hash值有关，但是我也还没明白(==补充：1.在resize()时判断是否需要重新计算hash值；2.用于计算key的hash值==)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="构造方式"><a href="#构造方式" class="headerlink" title="构造方式"></a>构造方式</h3><blockquote>
+<p><strong>public HashMap()</strong><br>无参构造方式：用默认容量,默认扩容因子构造map</p>
+<p><strong>public HashMap(int initialCapacity)</strong><br>用initialCapacity容量,默认扩容因子构造map</p>
+<p><strong>public HashMap(int initialCapacity, float loadFactor)</strong><br>用initialCapacity容量，loadFactor扩容因子构造map</p>
+<p><strong>public HashMap(Map&lt;? extends K, ? extends V&gt; m)</strong><br>用其他map构造新的map</p>
+</blockquote>
+<h3 id="核心方法"><a href="#核心方法" class="headerlink" title="核心方法"></a>核心方法</h3><blockquote>
+<p><strong>添加元素public V put(K key, V value)</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> V <span class="title">put</span><span class="params">(K key, V value)</span> </span>&#123;</div><div class="line">    <span class="comment">// 下面第一点讲解</span></div><div class="line">    <span class="keyword">if</span> (table == EMPTY_TABLE) &#123;</div><div class="line">        inflateTable(threshold);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 下面第二点讲解</span></div><div class="line">    <span class="keyword">if</span> (key == <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">return</span> putForNullKey(value);</div><div class="line">    </div><div class="line">    <span class="comment">// 取key的hash值,并用这个hash值来计算</span></div><div class="line">    <span class="comment">// 此键值对应该放置的数组中的索引(bucketIndex)</span></div><div class="line">    <span class="keyword">int</span> hash = hash(key);</div><div class="line">    <span class="keyword">int</span> i = indexFor(hash, table.length);</div><div class="line">    </div><div class="line">    <span class="comment">// 根据key算出的索引,根据索引取得数组i处的Entry(链表)</span></div><div class="line">    <span class="comment">// 循环判断此链表中是否存在此key对应的节点</span></div><div class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e = table[i]; e != <span class="keyword">null</span>; e = e.next) &#123;</div><div class="line">        Object k;</div><div class="line">        <span class="comment">// 如果节点e的hash值与key的hash值相等(就是比较的hashCode),</span></div><div class="line">        <span class="comment">// 也就是说发生了hash碰撞(key的hashCode跟e.key的hashCode是同一值)</span></div><div class="line">        <span class="comment">// 并且key相等(同一位置或者equals),也就是key已经存在对应节点</span></div><div class="line">        <span class="comment">// 那么就执行替换操作,并返回老的那个值</span></div><div class="line">        <span class="keyword">if</span> (e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))) &#123;</div><div class="line">            V oldValue = e.value;</div><div class="line">            e.value = value;</div><div class="line">            e.recordAccess(<span class="keyword">this</span>);</div><div class="line">            <span class="keyword">return</span> oldValue;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 1. 如果数组索引i处没有放置过任何值,也就是table[i]=null</span></div><div class="line">    <span class="comment">// 2. table[i]已经放置了Entry,但是hash值不相等(不可能)或者是key不equals()</span></div><div class="line">    <span class="comment">// 则新增一个Entry节点</span></div><div class="line">    modCount++;</div><div class="line">    addEntry(hash, key, value, i);</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>代码分析：</p>
+<p><strong>1. 如果当前map中没有任何元素，也就是说为空({})，那么就重新扩充table，inflateTable()方法源码如下：</strong><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">inflateTable</span><span class="params">(<span class="keyword">int</span> toSize)</span> </span>&#123;</div><div class="line">    <span class="comment">// 将toSize向上取值到2的倍数</span></div><div class="line">    <span class="keyword">int</span> capacity = roundUpToPowerOf2(toSize);</div><div class="line"></div><div class="line">    threshold = (<span class="keyword">int</span>) Math.min(capacity * loadFactor, MAXIMUM_CAPACITY + <span class="number">1</span>);</div><div class="line">    table = <span class="keyword">new</span> Entry[capacity];  <span class="comment">// 重新给table赋值</span></div><div class="line">    initHashSeedAsNeeded(capacity);  <span class="comment">// 重新计算hashSeed值</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><strong>2. 如果key为null，则专门处理key为null的情况，putForNullKey()代码如下：</strong><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> V <span class="title">putForNullKey</span><span class="params">(V value)</span> </span>&#123;</div><div class="line">    <span class="comment">// 从下述循环代码可以看出, key为null的元素,</span></div><div class="line">    <span class="comment">// 在内部数组中是放置在索引为0处位置的</span></div><div class="line">    <span class="comment">// (可能key不为null也会放置在这里,取决hash的结果如何)</span></div><div class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e = table[<span class="number">0</span>]; e != <span class="keyword">null</span>; e = e.next) &#123;</div><div class="line">        <span class="keyword">if</span> (e.key == <span class="keyword">null</span>) &#123;  <span class="comment">// 查找链表中key为null的节点,找到并用新值替换</span></div><div class="line">            V oldValue = e.value;</div><div class="line">            e.value = value;</div><div class="line">            e.recordAccess(<span class="keyword">this</span>);</div><div class="line">            <span class="keyword">return</span> oldValue;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 如果在数组0处没有找到key为null的对应节点,则新增一个Entry节点</span></div><div class="line">    modCount++;</div><div class="line">    <span class="comment">// key为null,hash直接取0,放置在数组中的位置也直接取0</span></div><div class="line">    addEntry(<span class="number">0</span>, <span class="keyword">null</span>, value, <span class="number">0</span>);</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 在数组索引bucketIndex处添加新的节点(注意是新增节点,并不一定是新增数组元素)</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">addEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</div><div class="line">    <span class="comment">// map当前容量达到了要扩容的值并且数组中待放置节点的元素位置已被占用</span></div><div class="line">    <span class="comment">// 则扩容,并重新计算新的节点要放置在数组中的索引位置</span></div><div class="line">    <span class="keyword">if</span> ((size &gt;= threshold) &amp;&amp; (<span class="keyword">null</span> != table[bucketIndex])) &#123;</div><div class="line">        resize(<span class="number">2</span> * table.length);</div><div class="line">        hash = (<span class="keyword">null</span> != key) ? hash(key) : <span class="number">0</span>;</div><div class="line">        bucketIndex = indexFor(hash, table.length);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 创建新的节点,并放置在数组中索引为buckedIndex处</span></div><div class="line">    createEntry(hash, key, value, bucketIndex);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 创建新的Entry节点(一个链表), 并将新的节点重新挂到数组上</span></div><div class="line"><span class="comment">// 在这里要注意的: bucketIndex的计算方式是怎么计算来的,在上面有讲到</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">createEntry</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">int</span> bucketIndex)</span> </span>&#123;</div><div class="line">    <span class="comment">// 获取之前挂在数组bucketIndex处的Entry节点</span></div><div class="line">    Entry&lt;K,V&gt; e = table[bucketIndex]; </div><div class="line">    <span class="comment">// new Entry&lt;&gt;(hash, key, value, e);</span></div><div class="line">    <span class="comment">// 创建一个新的节点,并跟原来的节点建立关系</span></div><div class="line">    table[bucketIndex] = <span class="keyword">new</span> Entry&lt;&gt;(hash, key, value, e);</div><div class="line">    size++;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p><strong>获取元素public V get(Object key)</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</div><div class="line">    <span class="comment">// key为null,专门处理</span></div><div class="line">    <span class="keyword">if</span> (key == <span class="keyword">null</span>)</div><div class="line">        <span class="keyword">return</span> getForNullKey();  <span class="comment">//取得数组0处的Entry</span></div><div class="line">    Entry&lt;K,V&gt; entry = getEntry(key);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span> == entry ? <span class="keyword">null</span> : entry.getValue();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">final</span> Entry&lt;K,V&gt; <span class="title">getEntry</span><span class="params">(Object key)</span> </span>&#123;</div><div class="line">    <span class="comment">// map中没有元素返回null</span></div><div class="line">    <span class="keyword">if</span> (size == <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 根据key的hash值取得对应key存放在数组中的位置</span></div><div class="line">    <span class="keyword">int</span> hash = (key == <span class="keyword">null</span>) ? <span class="number">0</span> : hash(key);</div><div class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e = table[indexFor(hash, table.length)];</div><div class="line">         e != <span class="keyword">null</span>;</div><div class="line">         e = e.next) &#123;</div><div class="line">        Object k;</div><div class="line">        <span class="keyword">if</span> (e.hash == hash &amp;&amp;</div><div class="line">            ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</div><div class="line">            <span class="keyword">return</span> e;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>扩容void resize(int newCapacity)</strong><br>在put()等增加size的操作中调用，在上述的addEntry()方法中被调用</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">resize</span><span class="params">(<span class="keyword">int</span> newCapacity)</span> </span>&#123;</div><div class="line">    <span class="comment">// 如果map容量已经达到Integer的最大值则不在扩容</span></div><div class="line">    Entry[] oldTable = table;</div><div class="line">    <span class="keyword">int</span> oldCapacity = oldTable.length;</div><div class="line">    <span class="keyword">if</span> (oldCapacity == MAXIMUM_CAPACITY) &#123;</div><div class="line">        threshold = Integer.MAX_VALUE;</div><div class="line">        <span class="keyword">return</span>;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 创建一个扩容后的新的空数组</span></div><div class="line">    Entry[] newTable = <span class="keyword">new</span> Entry[newCapacity];</div><div class="line">    <span class="comment">// 将map现在数组转移到新的空数组中</span></div><div class="line">    <span class="comment">// initHashSeedAsNeeded(newCapacity)用于确定在新数组</span></div><div class="line">    <span class="comment">// 每个key是否要重新计算hash值</span></div><div class="line">    transfer(newTable, initHashSeedAsNeeded(newCapacity));</div><div class="line">    table = newTable;</div><div class="line">    threshold = (<span class="keyword">int</span>)Math.min(newCapacity * loadFactor, MAXIMUM_CAPACITY + <span class="number">1</span>);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment"> * Transfers all entries from current table to newTable.</span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">transfer</span><span class="params">(Entry[] newTable, <span class="keyword">boolean</span> rehash)</span> </span>&#123;</div><div class="line">    <span class="comment">// 新数组的长度</span></div><div class="line">    <span class="keyword">int</span> newCapacity = newTable.length;</div><div class="line">    <span class="comment">// 对map中现有元素的老数组循环</span></div><div class="line">    <span class="keyword">for</span> (Entry&lt;K,V&gt; e : table) &#123;</div><div class="line">        <span class="comment">// 取得的数组中元素不为空(对应索引处存在Entry链表)</span></div><div class="line">        <span class="keyword">while</span>(<span class="keyword">null</span> != e) &#123;</div><div class="line">            <span class="comment">// 将链表的下一个节点拎出来保存</span></div><div class="line">            Entry&lt;K,V&gt; next = e.next;</div><div class="line">            <span class="comment">// 是否需要重新计算key的hash值</span></div><div class="line">            <span class="keyword">if</span> (rehash) &#123;</div><div class="line">                e.hash = <span class="keyword">null</span> == e.key ? <span class="number">0</span> : hash(e.key);</div><div class="line">            &#125;</div><div class="line">            <span class="comment">// 重新计算在新数组中的索引</span></div><div class="line">            <span class="keyword">int</span> i = indexFor(e.hash, newCapacity);</div><div class="line">            <span class="comment">// 将已经转换到新数组的entry拼接到当前处理entry的后面组成新的链表</span></div><div class="line">            e.next = newTable[i];</div><div class="line">            <span class="comment">// 将新的链表重新放置在新数组的索引处</span></div><div class="line">            newTable[i] = e;</div><div class="line">            <span class="comment">// 处理老数组链表的下一个entry</span></div><div class="line">            e = next;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>map迭代器Iterator核心private abstract class HashIterator\<e></e></strong><br>map中的KeyIterator，ValueIterator等迭代器均继承自HashIterator。map中的迭代器跟list中的迭代器一样，都会根据size变化次数来fail-fast(快速失败检查)</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">HashIterator</span>&lt;<span class="title">E</span>&gt; <span class="keyword">implements</span> <span class="title">Iterator</span>&lt;<span class="title">E</span>&gt; </span>&#123;</div><div class="line">    Entry&lt;K,V&gt; next;        <span class="comment">// next entry to return</span></div><div class="line">    <span class="keyword">int</span> expectedModCount;   <span class="comment">// For fast-fail</span></div><div class="line">    <span class="keyword">int</span> index;              <span class="comment">// current slot</span></div><div class="line">    Entry&lt;K,V&gt; current;     <span class="comment">// current entry</span></div><div class="line"></div><div class="line">    HashIterator() &#123;</div><div class="line">        expectedModCount = modCount; <span class="comment">// 赋值modCount</span></div><div class="line">        <span class="comment">// map有元素,就定位数组索引到第一个不为null的位置,并赋给next</span></div><div class="line">        <span class="keyword">if</span> (size &gt; <span class="number">0</span>) &#123; <span class="comment">// advance to first entry</span></div><div class="line">            Entry[] t = table;</div><div class="line">            <span class="keyword">while</span> (index &lt; t.length &amp;&amp; (next = t[index++]) == <span class="keyword">null</span>)</div><div class="line">                ;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">boolean</span> <span class="title">hasNext</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> next != <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">final</span> Entry&lt;K,V&gt; <span class="title">nextEntry</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="comment">// 在迭代期间, modCount值发生变化</span></div><div class="line">        <span class="comment">// (也就是map的size发生改变(执行了put, remove操作(迭代器的remove()除外)))</span></div><div class="line">        <span class="keyword">if</span> (modCount != expectedModCount)</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ConcurrentModificationException();</div><div class="line">        Entry&lt;K,V&gt; e = next;</div><div class="line">        <span class="keyword">if</span> (e == <span class="keyword">null</span>)</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NoSuchElementException();</div><div class="line">        <span class="comment">// 继续判断下一个entry,如果为空,则继续搜索数组下一个索引位置</span></div><div class="line">        <span class="keyword">if</span> ((next = e.next) == <span class="keyword">null</span>) &#123;</div><div class="line">            Entry[] t = table;</div><div class="line">            <span class="keyword">while</span> (index &lt; t.length &amp;&amp; (next = t[index++]) == <span class="keyword">null</span>)</div><div class="line">                ;</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 返回当前的entry</span></div><div class="line">        current = e;</div><div class="line">        <span class="keyword">return</span> e;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 用迭代器执行删除操作(不会引起快速失败)</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (current == <span class="keyword">null</span>)</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException();</div><div class="line">        <span class="keyword">if</span> (modCount != expectedModCount)</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ConcurrentModificationException();</div><div class="line">        Object k = current.key;</div><div class="line">        current = <span class="keyword">null</span>;</div><div class="line">        HashMap.<span class="keyword">this</span>.removeEntryForKey(k);</div><div class="line">        expectedModCount = modCount;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="针对map常见面试问题"><a href="#针对map常见面试问题" class="headerlink" title="针对map常见面试问题"></a><a href="http://www.importnew.com/7099.html" target="_blank" rel="external">针对map常见面试问题</a></h3>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/HashMap/" data-id="cj7o7n60k000sewaibnfzfej0" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+  <nav id="page-nav">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">__('next') &raquo;</a>
+  </nav>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

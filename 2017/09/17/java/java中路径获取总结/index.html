@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="getClass().getResource()等获取文件的方法总结首先要明白的一点是：所有方法的路径都是针对的类路径，也就是说是编译后的.class文件所在路径来说的。项目结构如下：      结果：    this.getClass().getResource(“”)：返回的是包含类全名的路径，一直是com.shell.test包的路径，也就是：E:/mavenalgorithm/target">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/java中路径获取总结/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="getClass().getResource()等获取文件的方法总结首先要明白的一点是：所有方法的路径都是针对的类路径，也就是说是编译后的.class文件所在路径来说的。项目结构如下：      结果：    this.getClass().getResource(“”)：返回的是包含类全名的路径，一直是com.shell.test包的路径，也就是：E:/mavenalgorithm/target">
+<meta property="og:image" content="http://yoursite.com/2017/09/17/java/java中路径获取总结/images/2.png">
+<meta property="og:image" content="http://yoursite.com/2017/09/17/java/java中路径获取总结/images/3.png">
+<meta property="og:image" content="http://yoursite.com/2017/09/17/java/java中路径获取总结/images/4.png">
+<meta property="og:image" content="http://yoursite.com/2017/09/17/java/java中路径获取总结/images/5.png">
+<meta property="og:image" content="http://yoursite.com/2017/09/17/java/java中路径获取总结/images/6.png">
+<meta property="og:image" content="c:/Users/Administrator/Desktop/note/java/images/7.png">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.881Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="getClass().getResource()等获取文件的方法总结首先要明白的一点是：所有方法的路径都是针对的类路径，也就是说是编译后的.class文件所在路径来说的。项目结构如下：      结果：    this.getClass().getResource(“”)：返回的是包含类全名的路径，一直是com.shell.test包的路径，也就是：E:/mavenalgorithm/target">
+<meta name="twitter:image" content="http://yoursite.com/2017/09/17/java/java中路径获取总结/images/2.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/java中路径获取总结" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/java中路径获取总结/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.367Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="getClass-getResource-等获取文件的方法总结"><a href="#getClass-getResource-等获取文件的方法总结" class="headerlink" title="getClass().getResource()等获取文件的方法总结"></a>getClass().getResource()等获取文件的方法总结</h2><p>首先要明白的一点是：所有方法的路径都是针对的类路径，也就是说是编译后的.class文件所在路径来说的。项目结构如下：</p>
+<p> <img src="images\2.png" alt="2"></p>
+<p> <img src="images\3.png" alt="3"></p>
+<p><img src="images\4.png" alt="4"></p>
+<p>结果：</p>
+<p> <img src="images\5.png" alt="5"></p>
+<ol>
+<li>this.getClass().getResource(“”)：返回的是包含类全名的路径，一直是com.shell.test包的路径，也就是：E:/mavenalgorithm/target/test-classes/com/shell/test/</li>
+</ol>
+<ol>
+<li>this.getClass().getResource(“/“)：返回的是项目配置的classpath路径，也就是：E:/mavenalgorithm/target/test-classes</li>
+</ol>
+<ol>
+<li><p>this.getClass().getResourceAsStream(“1.txt”)：获取的是当前类所在目录下的文件1.txt, 也就是：E:/mavenalgorithm/target/test-classes/com/shell/test/1.txt <img src="images\6.png" alt="6"></p>
+</li>
+<li><p>this.getClass().getResourceAsStream(“/1.txt”)：获取的是项目存放class文件的根目录下的1.txt, 也就是：E:/mavenalgorithm/target/test-classes/1.txt</p>
+<p> <img src="C:\Users\Administrator\Desktop\note\java\images\7.png" alt="7"></p>
+</li>
+<li><p>this.getClass.getClassLoader().getResource()跟this.getClass().getResource(“/“)的用处一；同理：this.getClass().getClassLoader().getResourceAsStream(“”)跟this.getClass().getResourceAsStream(“/“)是一样的</p>
+</li>
+<li><p>this.getClass.getClassLoader().getResource(“/“)会报错</p>
+<p>同理：this.getClass().getClassLoader().getResourceAsStream(“/“)会报错</p>
+<p>也就是说this.getClass().getClassLoader()执行之后已经是定位到了项目配置的classpath路径了</p>
+<p>this.getClass().getResource(“/“)和this.getClass().getResourceAsStream(“/“)一样的是定位到了项目的classpath下</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/java中路径获取总结/" data-id="cj7o7n5v40003ewaihtl5v3vg" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/Java虚拟机参数/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/java/FileWriter和PrintWriter乱码问题/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

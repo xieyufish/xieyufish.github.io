@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="java源码解析-Timer类Timer是jdk1.3中自带的定时任务框架系统。一个调度定时任务的工具线程类。可以执行一个只调度一次的任务也可以重复调度一个一定间隔时间的任务。一个Timer实例就是一个调度任务调度线程。当任务队列中的所有定时任务被执行完毕，这个定时调度的线程就会自动终止。如果你想让这个线程快速终止的话， 那么你可以直接调用cancel()方法可以让调度线程快速终止。Timer类是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/源码学习/util/Timer/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="java源码解析-Timer类Timer是jdk1.3中自带的定时任务框架系统。一个调度定时任务的工具线程类。可以执行一个只调度一次的任务也可以重复调度一个一定间隔时间的任务。一个Timer实例就是一个调度任务调度线程。当任务队列中的所有定时任务被执行完毕，这个定时调度的线程就会自动终止。如果你想让这个线程快速终止的话， 那么你可以直接调用cancel()方法可以让调度线程快速终止。Timer类是">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.897Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="java源码解析-Timer类Timer是jdk1.3中自带的定时任务框架系统。一个调度定时任务的工具线程类。可以执行一个只调度一次的任务也可以重复调度一个一定间隔时间的任务。一个Timer实例就是一个调度任务调度线程。当任务队列中的所有定时任务被执行完毕，这个定时调度的线程就会自动终止。如果你想让这个线程快速终止的话， 那么你可以直接调用cancel()方法可以让调度线程快速终止。Timer类是">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/源码学习/util/Timer" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/源码学习/util/Timer/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.485Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="java源码解析-Timer类"><a href="#java源码解析-Timer类" class="headerlink" title="java源码解析-Timer类"></a>java源码解析-Timer类</h2><p>Timer是jdk1.3中自带的定时任务框架系统。一个调度定时任务的工具线程类。可以执行一个只调度一次的任务也可以重复调度一个一定间隔时间的任务。<br>一个Timer实例就是一个调度任务调度线程。当任务队列中的所有定时任务被执行完毕，这个定时调度的线程就会自动终止。如果你想让这个线程快速终止的话， 那么你可以直接调用cancel()方法可以让调度线程快速终止。<br>Timer类是线程安全类：多个线程可以共享一个Timer实例。同时这个类不保证准时调度任务，因为他是用的Object.wait(long)方法。<br>Timer类能够支持大量的并行调度任务(成百上千没问题)，在Timer内部存储每个调度任务的结构是以==平衡二叉树堆(<a href="http://baike。baidu。com/view/157305。htm" target="_blank" rel="external">堆排序</a>)==的结构来保存每个任务对象的，这种存储结构能在log(n)的时间复杂度内快速的查询。<br>jdk1.5中提供了比Timer跟高效的定时调度线程池类ScheduledThreadPoolExecutor  </p>
+<hr>
+<h3 id="类定义"><a href="#类定义" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">public class Timer &#123;&#125;</div></pre></td></tr></table></figure>
+<h3 id="成员变量"><a href="#成员变量" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>private final TaskQueue</td>
+<td>queue = new TaskQueue()</td>
+<td>任务队列</td>
+</tr>
+<tr>
+<td>private final TimerThread</td>
+<td>thread = new TimerThread(queue)</td>
+<td>定时调度任务的线程类</td>
+</tr>
+<tr>
+<td>private final Object</td>
+<td>threadReaper</td>
+<td>用于终止定时调度线程的</td>
+</tr>
+<tr>
+<td>private final static AtomicInteger</td>
+<td>nextSerialNumber = new AtomicInteger(0)</td>
+<td>用于生成定时调度线程的名字</td>
+</tr>
+</tbody>
+</table>
+<h3 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h3><p>当我们实例化一个Timer类之后， 定时调度的线程就会启动start()一直等待(queue.wait())任务队列中加入任务<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">Timer</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>(<span class="string">"Timer-"</span> + serialNumber());</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">Timer</span><span class="params">(<span class="keyword">boolean</span> isDaemon)</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>(<span class="string">"Timer-"</span> + serialNumber(), isDaemon);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">Timer</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">    thread.setName(name);</div><div class="line">    thread.start();</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">Timer</span><span class="params">(String name, <span class="keyword">boolean</span> isDaemon)</span> </span>&#123;</div><div class="line">    thread.setName(name);</div><div class="line">    thread.setDaemon(isDaemon);</div><div class="line">    thread.start();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="核心方法"><a href="#核心方法" class="headerlink" title="核心方法"></a>核心方法</h3><p>Timer中有多个重载的public void schedule()方法，但是这些重载的方法只会做一些参数的判断，并都最终调度的sched()方法，所以下面将讲解sched()方法。</p>
+<blockquote>
+<p><strong>sched()方法</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">sched</span><span class="params">(TimerTask task, <span class="keyword">long</span> time, <span class="keyword">long</span> period)</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (time &lt; <span class="number">0</span>)</div><div class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Illegal execution time."</span>);</div><div class="line"></div><div class="line">    <span class="comment">// Constrain value of period sufficiently to prevent numeric</span></div><div class="line">    <span class="comment">// overflow while still being effectively infinitely large.</span></div><div class="line">    <span class="keyword">if</span> (Math.abs(period) &gt; (Long.MAX_VALUE &gt;&gt; <span class="number">1</span>))</div><div class="line">        period &gt;&gt;= <span class="number">1</span>;</div><div class="line">    </div><div class="line">    <span class="comment">// 获取任务队列的锁(同一个线程多次获取这个锁并不会被阻塞，不同线程获取时才可能被阻塞)</span></div><div class="line">    <span class="keyword">synchronized</span>(queue) &#123;</div><div class="line">        <span class="comment">// 如果定时调度线程已经终止了，则抛出异常结束</span></div><div class="line">        <span class="keyword">if</span> (!thread.newTasksMayBeScheduled)</div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Timer already cancelled."</span>);</div><div class="line">        </div><div class="line">        <span class="comment">// 再获取定时任务对象的锁(为什么还要再加这个锁呢?想不清)</span></div><div class="line">        <span class="keyword">synchronized</span>(task.lock) &#123;</div><div class="line">            <span class="comment">// 判断线程的状态，防止多线程同时调度到一个任务时多次被加入任务队列</span></div><div class="line">            <span class="keyword">if</span> (task.state != TimerTask.VIRGIN)</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(</div><div class="line">                    <span class="string">"Task already scheduled or cancelled"</span>);</div><div class="line">                    </div><div class="line">            <span class="comment">// 初始化定时任务的下次执行时间</span></div><div class="line">            task.nextExecutionTime = time;  </div><div class="line">            <span class="comment">// 重复执行的间隔时间</span></div><div class="line">            task.period = period;  </div><div class="line">            <span class="comment">// 将定时任务的状态由TimerTask.VIRGIN(一个定时任务的初始化状态)设置为TimerTask.SCHEDULED</span></div><div class="line">            task.state = TimerTask.SCHEDULED;  </div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        <span class="comment">// 将任务加入任务队列</span></div><div class="line">        queue.add(task);</div><div class="line">        <span class="comment">// 如果当前加入的任务是需要第一个被执行的(也就是他的下一次执行时间离现在最近)</span></div><div class="line">        <span class="comment">// 则唤醒等待queue的线程(对应到上面提到的queue.wait())</span></div><div class="line">        <span class="keyword">if</span> (queue.getMin() == task)</div><div class="line">            queue.notify();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>cancel()终止定时线程</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cancel</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="comment">// 从这里可以知道，如果调用了Timer的cancel()方法也不会立刻就终止定时调度线程</span></div><div class="line">    <span class="comment">// 因为这里需要获取任务队列的锁，如果TimerThread占用了queue的锁，也就是说queue并没有在wait()，</span></div><div class="line">    <span class="comment">// 那么cancel就不会立刻终止定时线程， 他需要等待TimerThread定时线程释放掉queue的锁</span></div><div class="line">    <span class="comment">// 也就是说如果queue队列中有定时任务存在，那么cancel就不会终止定时线程，他需要等到queue中的定时任务被清空</span></div><div class="line">    <span class="comment">// 用一句话说: cancel会等到所有定时任务执行完后立刻终止定时线程</span></div><div class="line">    <span class="keyword">synchronized</span>(queue) &#123;</div><div class="line">        thread.newTasksMayBeScheduled = <span class="keyword">false</span>;</div><div class="line">        queue.clear();</div><div class="line">        queue.notify();  <span class="comment">// In case queue was already empty.</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>purge()方法</strong><br>从队列中移除所有状态为cancelled的任务，调用这个方法并不会影响timer的行为，但是一般应用不会调用这个方法，除非有很多被cancelled的任务；同时调用这个方法也会比较消耗时间。</p>
+</blockquote>
+<hr>
+<h2 id="TimerThread类"><a href="#TimerThread类" class="headerlink" title="TimerThread类"></a>TimerThread类</h2><p>TimerThread是Timer中定时调度线程类的定义，这个类会做为一个线程一直运行来执行Timer中任务队列中的任务。</p>
+<h3 id="类定义-1"><a href="#类定义-1" class="headerlink" title="类定义"></a>类定义</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">TimerThread</span> <span class="keyword">extends</span> <span class="title">Thread</span></span></div></pre></td></tr></table></figure>
+<h3 id="成员变量-1"><a href="#成员变量-1" class="headerlink" title="成员变量"></a>成员变量</h3><table>
+<thead>
+<tr>
+<th>修饰符</th>
+<th>变量名</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>boolean</td>
+<td>newTasksMayBeScheduled = true</td>
+<td>用于控制当queue任务队列为空时，定时线程是否应该立刻终止(false立刻终止)</td>
+</tr>
+<tr>
+<td>private TaskQueue</td>
+<td>queue</td>
+<td>任务队列(这个当TimerThread在Timer中被实例化时会传入)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><blockquote>
+<p><strong>run()方法</strong><br>定时线程的执行方法，它会调用TimerThread类的mainLoop()方法。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        mainLoop();</div><div class="line">    &#125; <span class="keyword">finally</span> &#123;</div><div class="line">        <span class="comment">// Someone killed this Thread， behave as if Timer cancelled</span></div><div class="line">        <span class="keyword">synchronized</span>(queue) &#123;</div><div class="line">            newTasksMayBeScheduled = <span class="keyword">false</span>;</div><div class="line">            queue.clear();  <span class="comment">// Eliminate obsolete references</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>mainLoop()方法</strong>  </p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">mainLoop</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="comment">// 无限循环来控制等待任务队列中加入任务</span></div><div class="line">    <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            TimerTask task;</div><div class="line">            <span class="keyword">boolean</span> taskFired;</div><div class="line">            <span class="comment">// 获取任务队列的锁</span></div><div class="line">            <span class="keyword">synchronized</span>(queue) &#123;</div><div class="line">                <span class="comment">// 如果任务队列为空，并且线程没有被cancel()</span></div><div class="line">                <span class="comment">// 则线程等待queue锁，queue.wait()方法会释放获得的queue锁</span></div><div class="line">                <span class="comment">// 这样在Timer中sched()方法才能够获取到queue锁</span></div><div class="line">                <span class="keyword">while</span> (queue.isEmpty() &amp;&amp; newTasksMayBeScheduled)</div><div class="line">                    queue.wait();</div><div class="line">                </div><div class="line">                <span class="comment">// 如果任务队列为空了，那么就退出循环</span></div><div class="line">                <span class="comment">// 这种情况要发生，那么必须newTasksMayBeScheduled=false</span></div><div class="line">                <span class="comment">// 因为如果newTasksMayBeScheduled=true，就会在上面的while循环中执行queue.wait()，使线程进入等待状态</span></div><div class="line">                <span class="comment">// 等线程从等待状态恢复时，说明queue.notify()方法被调用了，</span></div><div class="line">                <span class="comment">// 而观察Timer代码这只可能在sched()方法中发生， 这个方法会在队列queue中add任务而使queue不再为空</span></div><div class="line">                <span class="keyword">if</span> (queue.isEmpty())</div><div class="line">                    <span class="keyword">break</span>; </div><div class="line"></div><div class="line">                <span class="keyword">long</span> currentTime, executionTime;</div><div class="line">                <span class="comment">// 得到任务队列中的位置1的任务</span></div><div class="line">                task = queue.getMin();</div><div class="line">                <span class="comment">// 获取任务的锁</span></div><div class="line">                <span class="keyword">synchronized</span>(task.lock) &#123;</div><div class="line">                    <span class="comment">// 如果任务被取消了(TimerTask.cancel()方法被调用)</span></div><div class="line">                    <span class="comment">// 将任务从队列中移除，继续重新循环</span></div><div class="line">                    <span class="keyword">if</span> (task.state == TimerTask.CANCELLED) &#123;</div><div class="line">                        queue.removeMin();</div><div class="line">                        <span class="keyword">continue</span>;  <span class="comment">// No action required， poll queue again</span></div><div class="line">                    &#125;</div><div class="line">                    </div><div class="line">                    <span class="comment">// 获取任务的执行时间</span></div><div class="line">                    currentTime = System.currentTimeMillis();</div><div class="line">                    executionTime = task.nextExecutionTime;</div><div class="line">                    </div><div class="line">                    <span class="comment">// 计算任务是否应该被触发</span></div><div class="line">                    <span class="keyword">if</span> (taskFired = (executionTime&lt;=currentTime)) &#123;</div><div class="line">                        <span class="comment">// 任务应该被触发，并且不是重复任务</span></div><div class="line">                        <span class="comment">// 将任务从队列中移除并修改任务的执行状态</span></div><div class="line">                        <span class="keyword">if</span> (task.period == <span class="number">0</span>) &#123; <span class="comment">// Non-repeating， remove</span></div><div class="line">                            queue.removeMin();</div><div class="line">                            task.state = TimerTask.EXECUTED;</div><div class="line">                        &#125; <span class="keyword">else</span> &#123; <span class="comment">// 任务是重复执行任务，计算任务下一次应该被执行的时间，并重新排序任务队列</span></div><div class="line">                            queue.rescheduleMin(</div><div class="line">                              task.period&lt;<span class="number">0</span> ? currentTime   - task.period</div><div class="line">                                            : executionTime + task.period);</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                <span class="comment">// 如果任务不应被触发，让其等待一定时间后执行</span></div><div class="line">                <span class="keyword">if</span> (!taskFired) <span class="comment">// Task hasn't yet fired; wait</span></div><div class="line">                    queue.wait(executionTime - currentTime);</div><div class="line">            &#125;</div><div class="line">            <span class="comment">// 任务应该被触发，让任务执行</span></div><div class="line">            <span class="keyword">if</span> (taskFired)  <span class="comment">// Task fired; run it, holding no locks</span></div><div class="line">                task.run();  <span class="comment">// 任务也是一个线程</span></div><div class="line">        &#125; <span class="keyword">catch</span>(InterruptedException e) &#123;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<hr>
+<h2 id="TaskQueue类"><a href="#TaskQueue类" class="headerlink" title="TaskQueue类"></a>TaskQueue类</h2><p>TaskQueue是一个任务队列类，用于保存定时器需要执行的定时任务，这个队列是一个数组，只不过是一种平衡二叉树堆结构的数组。至于这个树堆是怎么样一种结构，还请执行百度。只能说这种结构总是保证值最小或者是值最大的在数组中的第一个位置(这个类中始终是nextExecuteTime最小的在第一个位置)，没当队列有增加，删除操作就会重新调整队列结构，让nextExecuteTime值最小的放在第一个位置。</p>
+<hr>
+<h2 id="TimerTask类"><a href="#TimerTask类" class="headerlink" title="TimerTask类"></a>TimerTask类</h2><p>TimerTask任务类，继承自Thread，如果我们要用Timer来做定时任务，那么我们必须继承TimerTask类，并且实现run()方法(具体任务代码)。如果要取消一个任务的调度，则调用TimerTask.cancel()方法将取消任务的执行。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/源码学习/util/Timer/" data-id="cj7o7n60h000qewai7fxyprz9" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/源码学习/util/TreeMap/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

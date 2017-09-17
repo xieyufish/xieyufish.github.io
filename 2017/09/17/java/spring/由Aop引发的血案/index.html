@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="由AOP引发的血案Controller类 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970/* * 文件名：[] * 版权： * 描述： * 修改人：shell * 修改时间：2016年">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/spring/由Aop引发的血案/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="由AOP引发的血案Controller类 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970/* * 文件名：[] * 版权： * 描述： * 修改人：shell * 修改时间：2016年">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.897Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="由AOP引发的血案Controller类 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970/* * 文件名：[] * 版权： * 描述： * 修改人：shell * 修改时间：2016年">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/spring/由Aop引发的血案" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/spring/由Aop引发的血案/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.427Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="由AOP引发的血案"><a href="#由AOP引发的血案" class="headerlink" title="由AOP引发的血案"></a>由AOP引发的血案</h2><p><strong>Controller类</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line"><span class="comment"> * 文件名：[]</span></div><div class="line"><span class="comment"> * 版权：</span></div><div class="line"><span class="comment"> * 描述：</span></div><div class="line"><span class="comment"> * 修改人：shell</span></div><div class="line"><span class="comment"> * 修改时间：2016年1月4日</span></div><div class="line"><span class="comment"> * 修改内容：</span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="keyword">package</span> com.shell.user;</div><div class="line"></div><div class="line"><span class="keyword">import</span> java.awt.image.BufferedImage;</div><div class="line"><span class="keyword">import</span> java.io.IOException;</div><div class="line"><span class="keyword">import</span> java.io.OutputStream;</div><div class="line"><span class="keyword">import</span> java.io.PrintWriter;</div><div class="line"></div><div class="line"><span class="keyword">import</span> javax.imageio.ImageIO;</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</div><div class="line"><span class="keyword">import</span> org.springframework.context.annotation.Scope;</div><div class="line"><span class="keyword">import</span> org.springframework.stereotype.Controller;</div><div class="line"><span class="keyword">import</span> org.springframework.web.bind.annotation.RequestMapping;</div><div class="line"></div><div class="line"><span class="keyword">import</span> com.google.code.kaptcha.Producer;</div><div class="line"><span class="keyword">import</span> com.shell.common.constants.SysConstants;</div><div class="line"><span class="keyword">import</span> com.shell.common.controller.BaseController;</div><div class="line"><span class="keyword">import</span> com.shell.common.model.ResultObject;</div><div class="line"><span class="keyword">import</span> com.shell.user.impl.UserServiceImpl;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment"> * &lt;一句话功能简述&gt;</span></div><div class="line"><span class="comment"> * &lt;功能详细描述&gt;</span></div><div class="line"><span class="comment"> * <span class="doctag">@author</span>   shell</span></div><div class="line"><span class="comment"> * <span class="doctag">@version</span>  [版本号,2016年1月4日]</span></div><div class="line"><span class="comment"> * <span class="doctag">@seee</span>      </span></div><div class="line"><span class="comment"> * <span class="doctag">@since</span></span></div><div class="line"><span class="comment"> * <span class="doctag">@Deprecated</span></span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="meta">@Controller</span></div><div class="line"><span class="meta">@Scope</span>(<span class="string">"prototype"</span>)</div><div class="line"><span class="meta">@RequestMapping</span>(<span class="string">"/user"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserController</span> <span class="keyword">extends</span> <span class="title">BaseController</span> </span>&#123;</div><div class="line"> </div><div class="line"> <span class="meta">@Autowired</span></div><div class="line">    <span class="keyword">private</span> Producer captchaProducer;</div><div class="line"> </div><div class="line"> <span class="meta">@Autowired</span></div><div class="line"> <span class="keyword">private</span> UserServiceImpl userService;   <span class="comment">// 直接是一个实现类</span></div><div class="line"> </div><div class="line"> <span class="meta">@RequestMapping</span>(<span class="string">"/authCode"</span>)</div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">authCode</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">  String text = captchaProducer.createText();</div><div class="line">  BufferedImage image = captchaProducer.createImage(text);</div><div class="line">  session.setAttribute(SysConstants.VERIFY_CODE, text);</div><div class="line">  OutputStream out = response.getOutputStream();</div><div class="line">  ImageIO.write(image, <span class="string">"png"</span>, out);</div><div class="line">  out.flush();</div><div class="line">  out.close();</div><div class="line"> &#125;</div><div class="line"> </div><div class="line"> <span class="meta">@RequestMapping</span>(<span class="string">"/login"</span>)</div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">login</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">  String account = request.getParameter(<span class="string">"account"</span>);</div><div class="line">  String password = request.getParameter(<span class="string">"password"</span>);</div><div class="line">  Object user = userService.getUser(account,password);</div><div class="line">  PrintWriter out = response.getWriter();</div><div class="line">  ResultObject resultObject = <span class="keyword">new</span> ResultObject();</div><div class="line">  resultObject.setData(user);</div><div class="line">  out.write(resultObject.toString());</div><div class="line"> &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>Service类</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line"><span class="comment"> * 文件名：[]</span></div><div class="line"><span class="comment"> * 版权：</span></div><div class="line"><span class="comment"> * 描述：</span></div><div class="line"><span class="comment"> * 修改人：shell</span></div><div class="line"><span class="comment"> * 修改时间：2016年3月2日</span></div><div class="line"><span class="comment"> * 修改内容：</span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="keyword">package</span> com.shell.user.impl;</div><div class="line"></div><div class="line"><span class="keyword">import</span> java.util.HashMap;</div><div class="line"><span class="keyword">import</span> java.util.Map;</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</div><div class="line"><span class="keyword">import</span> org.springframework.stereotype.Service;</div><div class="line"></div><div class="line"><span class="keyword">import</span> com.shell.common.cache.CacheAnnotation;</div><div class="line"><span class="keyword">import</span> com.shell.common.cache.CacheOperateEnum;</div><div class="line"><span class="keyword">import</span> com.shell.common.dao.BaseDao;</div><div class="line"><span class="keyword">import</span> com.shell.common.service.impl.BaseServiceImpl;</div><div class="line"><span class="keyword">import</span> com.shell.user.User;</div><div class="line"><span class="keyword">import</span> com.shell.user.ifc.UserDao;</div><div class="line"><span class="keyword">import</span> com.shell.user.ifc.UserService;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment"> * &lt;一句话功能简述&gt;</span></div><div class="line"><span class="comment"> * &lt;功能详细描述&gt;</span></div><div class="line"><span class="comment"> * <span class="doctag">@author</span>   shell</span></div><div class="line"><span class="comment"> * <span class="doctag">@version</span>  [版本号,2016年3月2日]</span></div><div class="line"><span class="comment"> * <span class="doctag">@seee</span>      </span></div><div class="line"><span class="comment"> * <span class="doctag">@since</span></span></div><div class="line"><span class="comment"> * <span class="doctag">@Deprecated</span></span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="meta">@Service</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserServiceImpl</span> <span class="keyword">extends</span> <span class="title">BaseServiceImpl</span>&lt;<span class="title">User</span>&gt; </span>&#123;</div><div class="line"> <span class="meta">@Autowired</span></div><div class="line"> <span class="keyword">private</span> UserDao dao;</div><div class="line"> </div><div class="line"> <span class="meta">@Override</span></div><div class="line"> <span class="function"><span class="keyword">protected</span> BaseDao&lt;User&gt; <span class="title">getDao</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> dao;</div><div class="line"> &#125;</div><div class="line"> <span class="meta">@CacheAnnotation</span>(operate=CacheOperateEnum.SELECT)</div><div class="line"> <span class="function"><span class="keyword">public</span> Object <span class="title">getUser</span><span class="params">(String account, String password)</span> </span>&#123;</div><div class="line">  Map&lt;String, Object&gt; params = <span class="keyword">new</span> HashMap&lt;&gt;();</div><div class="line">  params.put(<span class="string">"account"</span>, account);</div><div class="line">  params.put(<span class="string">"password"</span>, password);</div><div class="line">  params.put(<span class="string">"sqlId"</span>, <span class="string">"getUser"</span>);</div><div class="line">  Object user = queryObject(params);</div><div class="line">  System.out.println(<span class="string">"××××××××8×××××××执行查询××××××××××××××××××"</span>);</div><div class="line">  <span class="keyword">return</span> user;</div><div class="line"> &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>AOP类</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*</span></div><div class="line"><span class="comment"> * 文件名：[]</span></div><div class="line"><span class="comment"> * 版权：</span></div><div class="line"><span class="comment"> * 描述：AOP缓存控制配置--- 注解实现</span></div><div class="line"><span class="comment"> * 修改人：shell</span></div><div class="line"><span class="comment"> * 修改时间：2016年3月2日</span></div><div class="line"><span class="comment"> * 修改内容：</span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="keyword">package</span> com.shell.common.cache;</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.aspectj.lang.ProceedingJoinPoint;</div><div class="line"><span class="keyword">import</span> org.aspectj.lang.annotation.Around;</div><div class="line"><span class="keyword">import</span> org.aspectj.lang.annotation.Aspect;</div><div class="line"><span class="keyword">import</span> org.aspectj.lang.reflect.MethodSignature;</div><div class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</div><div class="line"><span class="keyword">import</span> org.springframework.cache.ehcache.EhCacheCache;</div><div class="line"><span class="keyword">import</span> org.springframework.cache.ehcache.EhCacheCacheManager;</div><div class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</div><div class="line"></div><div class="line"><span class="keyword">import</span> net.sf.ehcache.Ehcache;</div><div class="line"><span class="keyword">import</span> net.sf.ehcache.Element;</div><div class="line"></div><div class="line"><span class="comment">/**</span></div><div class="line"><span class="comment"> * &lt;一句话功能简述&gt;</span></div><div class="line"><span class="comment"> * &lt;功能详细描述&gt;</span></div><div class="line"><span class="comment"> * <span class="doctag">@author</span>   shell</span></div><div class="line"><span class="comment"> * <span class="doctag">@version</span>  [版本号,2016年3月2日]</span></div><div class="line"><span class="comment"> * <span class="doctag">@see</span>    </span></div><div class="line"><span class="comment"> * <span class="doctag">@since</span></span></div><div class="line"><span class="comment"> * <span class="doctag">@Deprecated</span></span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="meta">@Aspect</span></div><div class="line"><span class="meta">@Component</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CacheInterceptor</span> </span>&#123;</div><div class="line"> <span class="meta">@Autowired</span></div><div class="line"> <span class="keyword">private</span> EhCacheCacheManager ehcacheManager;</div><div class="line"> </div><div class="line"> <span class="meta">@Around</span>(<span class="string">"@annotation(CacheAnnotation)"</span>)</div><div class="line"> <span class="function"><span class="keyword">public</span> Object <span class="title">executeCacheOperate</span><span class="params">(ProceedingJoinPoint joinPoint)</span> <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">  Object target = joinPoint.getTarget();</div><div class="line">  String className = target.getClass().getName();</div><div class="line">  String method = joinPoint.getSignature().getName();</div><div class="line">  CacheAnnotation anno = ((MethodSignature)joinPoint.getSignature()).getMethod().getAnnotation(CacheAnnotation.class);</div><div class="line"> </div><div class="line">  String key = className + <span class="string">"."</span> + method;</div><div class="line">  Object result = <span class="keyword">null</span>;</div><div class="line">  Ehcache ehcache = ((EhCacheCache) ehcacheManager.getCache(<span class="string">"sample"</span>)).getNativeCache();</div><div class="line">  <span class="keyword">switch</span> (anno.operate()) &#123;</div><div class="line">  <span class="keyword">case</span> ADD:</div><div class="line">   joinPoint.proceed();</div><div class="line">   <span class="keyword">break</span>;</div><div class="line">  <span class="keyword">case</span> DELETE:</div><div class="line">  <span class="keyword">case</span> UPDATE:</div><div class="line">   <span class="keyword">if</span>(ehcache.isKeyInCache(key)) &#123;</div><div class="line">    ehcache.remove(key);</div><div class="line">   &#125;</div><div class="line">   joinPoint.proceed();</div><div class="line">   <span class="keyword">break</span>;</div><div class="line">  <span class="keyword">case</span> SELECT:</div><div class="line">   <span class="keyword">if</span>(ehcache.isKeyInCache(key)) &#123;</div><div class="line">    result = ehcache.get(key);</div><div class="line">    <span class="keyword">break</span>;</div><div class="line">   &#125;</div><div class="line">   Object value = joinPoint.proceed();</div><div class="line">   Element element = <span class="keyword">new</span> Element(key, value);</div><div class="line">   ehcache.put(element);</div><div class="line">   <span class="keyword">break</span>;</div><div class="line">  <span class="keyword">default</span>:</div><div class="line">   <span class="keyword">break</span>;</div><div class="line">  &#125;</div><div class="line"> </div><div class="line">  <span class="keyword">return</span> result;</div><div class="line"> &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>aop配置</strong></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">aop:config</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">aop:pointcut</span> <span class="attr">expression</span>=<span class="string">"execution(* com.shell..*ServiceImpl.*(..))"</span> <span class="attr">id</span>=<span class="string">"pointCut"</span>/&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">aop:advisor</span> <span class="attr">advice-ref</span>=<span class="string">"txAdvice"</span> <span class="attr">pointcut-ref</span>=<span class="string">"pointCut"</span>/&gt;</span></div><div class="line"> <span class="tag">&lt;/<span class="name">aop:config</span>&gt;</span></div></pre></td></tr></table></figure>
+<p><strong>springmvc配置</strong></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></div><div class="line"><span class="tag"><span class="attr">xmlns:mvc</span>=<span class="string">"http://www.springframework.org/schema/mvc"</span> <span class="attr">xmlns:context</span>=<span class="string">"http://www.springframework.org/schema/context"</span></span></div><div class="line"><span class="tag"><span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span> <span class="attr">xmlns:aop</span>=<span class="string">"http://www.springframework.org/schema/aop"</span></span></div><div class="line"><span class="tag"><span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans  </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/beans/spring-beans-3.1.xsd </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/aop  </span></span></div><div class="line"><span class="tag"><span class="string">      	http://www.springframework.org/schema/aop/spring-aop-3.2.xsd </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/context   </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/context/spring-context-3.1.xsd  </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/mvc  </span></span></div><div class="line"><span class="tag"><span class="string">            http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd"</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">context:component-scan</span> <span class="attr">base-package</span>=<span class="string">"com.shell.*"</span>&gt;</span></div><div class="line">  	<span class="tag">&lt;<span class="name">context:include-filter</span> <span class="attr">type</span>=<span class="string">"annotation"</span></span></div><div class="line"><span class="tag">		<span class="attr">expression</span>=<span class="string">"org.springframework.stereotype.Controller"</span> /&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">context:component-scan</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">aop:aspectj-autoproxy</span>&gt;</span><span class="tag">&lt;/<span class="name">aop:aspectj-autoproxy</span>&gt;</span><span class="comment">&lt;!-- 引发血案的关键地方 --&gt;</span></div><div class="line">  <span class="comment">&lt;!-- 视图 --&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"org.springframework.web.servlet.view.InternalResourceViewResolver"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"prefix"</span> <span class="attr">value</span>=<span class="string">"/WEB-INF/views/"</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"suffix"</span> <span class="attr">value</span>=<span class="string">".jsp"</span> /&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"></div><div class="line">  <span class="tag">&lt;<span class="name">mvc:annotation-driven</span>&gt;</span><span class="tag">&lt;/<span class="name">mvc:annotation-driven</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">mvc:resources</span> <span class="attr">location</span>=<span class="string">"/WEB-INF/static/"</span> <span class="attr">mapping</span>=<span class="string">"/static/**"</span> /&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">mvc:resources</span> <span class="attr">location</span>=<span class="string">"/assets/"</span> <span class="attr">mapping</span>=<span class="string">"/assets/**"</span> /&gt;</span></div><div class="line"></div><div class="line">  <span class="comment">&lt;!-- 页面生成随机验证码 --&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"captchaProducer"</span> <span class="attr">class</span>=<span class="string">"com.google.code.kaptcha.impl.DefaultKaptcha"</span>&gt;</span></div><div class="line">  	<span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"config"</span>&gt;</span></div><div class="line">  	<span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"com.google.code.kaptcha.util.Config"</span>&gt;</span></div><div class="line">  	<span class="tag">&lt;<span class="name">constructor-arg</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">props</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.border"</span>&gt;</span>no<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.border.color"</span>&gt;</span>105,179,90<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.textproducer.font.color"</span>&gt;</span>red<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.image.width"</span>&gt;</span>250<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.textproducer.font.size"</span>&gt;</span>80<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.image.height"</span>&gt;</span>90<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.session.key"</span>&gt;</span>code<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.textproducer.char.length"</span>&gt;</span>4<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">prop</span> <span class="attr">key</span>=<span class="string">"kaptcha.textproducer.font.names"</span>&gt;</span>宋体,楷体,微软雅黑<span class="tag">&lt;/<span class="name">prop</span>&gt;</span></div><div class="line">      <span class="tag">&lt;/<span class="name">props</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">constructor-arg</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line">  	<span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>问题描述：当我在浏览器输入项目根地址（配置会跳转到网页登陆首页– 会访问验证码接口（即authCode路径））时，不能够正确获取到验证码， 后台报错是说@Autowired private UserServiceImpl userService;此处的UserServiceImpl不能够找到一个类型匹配的实力注入，从而导致Controllor实例化失败，造成访问不到authCode路径，所以出不来验证码。根据我此前所有的知识，我绞尽脑汁也想不清问题所在，因为我在UserServiceImpl的类上面明确加了注解@Service，而且在配置文件中也配置了扫描注解包，从我的理解查看来看是不会有任何问题的。 但是现在问题出现了。</p>
+<p>解决方式： 根据先前已有的一个成功功能实现，我新建了一个接口UserService，并让UserServiceImpl实现它，之后再在Controllor中换成该接口，其他配置不变，再尝试访问的时候，好了，奇迹般的好了，问题解决了。然而问题是解决了，但是我还是不知道是什么原因引起的，由于时间很晚，所以问题暂时搁下。</p>
+<p>第二天（也就是我写文章的这天），我在公司看其他问题的时候，偶然看到了一个aop 代理 proxy-target-class配置为true，然后是什么接口和类的区别时，诶，我一想跟我昨晚的问题有点类似。</p>
+<p>然后今晚我回来看了关于AOP的问题。</p>
+<p>在spring中，AOP（面向切面编程）是基于动态代理的方式实现的，而spring对于动态代理的方式有两种选择： jdk动态代理和cglib动态代理。</p>
+<p>jdk动态代理是基于接口实现的，也就是说他的代理目标对象必须要实现一个或者多个接口才能被代理；</p>
+<p>cglib是直接针对类实现代理的，没必要实现接口；</p>
+<p>知道这两个区别，上述问题就变得明朗了。</p>
+<p>由于我在配置文件中加了元素：</p>
+<p>\<aop:aspectj-autoproxy>\</aop:aspectj-autoproxy> 这个元素属性的意思是，aop代理的实现方式使用jdk的方式实现相当于\<aop:aspectj-autoproxy proxy-target-class="false">\</aop:aspectj-autoproxy>这种配置方式。</p>
+<p>由于有这个配置的存在，因为UserServiceImpl实现是没有实现UserService接口的，而这个类有要被事物，缓存，日志3个aop代理，所以造成被代理时不能正确的被代理，被实例化，所以造成Controller注入时，找不到该UserServiceImpl的实力而失败。</p>
+<p>知道这个原因后， 我将配置\<aop:aspectj-autoproxy proxy-target-class="false">\</aop:aspectj-autoproxy>改为\<aop:aspectj-autoproxy proxy-target-class="true">\</aop:aspectj-autoproxy>（吃配置方式表示使用cglib的代理方式），再重新将UserServiceImpl的实现接口给去掉，再次加载访问，错误不再出现。</p>
+<p>同时有网友说spring会自动根据你的实现来选择合适的代理方式，所以我试着将\<aop:aspectj-autoproxy proxy-target-class="true">\</aop:aspectj-autoproxy>这样的配置去掉，问题也可以成功解决。</p>
+<p>\<aop:config proxy-target-class="true">强制spring使用cglib代理方式</aop:config></p>
+<p>\<aop:aspectj-autoproxy proxy-target-class="true">\</aop:aspectj-autoproxy>强制spring  aspectj方式实现aop时使用cglib方式    </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/spring/由Aop引发的血案/" data-id="cj7o7n5xh000dewair5bdzn0p" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/源码学习/annotation/Annotation/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/java/spring/spring声明式事物管理/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

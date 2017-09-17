@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="dependencies(依赖)依赖注入 基于构造函数的注入方式； 基于setter方法的注入方式； 依赖注入时，有依赖关系的bean之间的处理解决过程是怎样的顺序：在容器启动时，会先初始化scope=singleton的bean，如果scope！=singleton将不会在容器启动时加载和初始化bean，而是在第一次被请求时才会初始化一个bean，如果bean被设置为延迟加载模式，那么不管是不是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/2017/09/17/java/spring/spring4.2文档学习(三)/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="dependencies(依赖)依赖注入 基于构造函数的注入方式； 基于setter方法的注入方式； 依赖注入时，有依赖关系的bean之间的处理解决过程是怎样的顺序：在容器启动时，会先初始化scope=singleton的bean，如果scope！=singleton将不会在容器启动时加载和初始化bean，而是在第一次被请求时才会初始化一个bean，如果bean被设置为延迟加载模式，那么不管是不是">
+<meta property="og:updated_time" content="2016-12-31T03:43:35.897Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+<meta name="twitter:description" content="dependencies(依赖)依赖注入 基于构造函数的注入方式； 基于setter方法的注入方式； 依赖注入时，有依赖关系的bean之间的处理解决过程是怎样的顺序：在容器启动时，会先初始化scope=singleton的bean，如果scope！=singleton将不会在容器启动时加载和初始化bean，而是在第一次被请求时才会初始化一个bean，如果bean被设置为延迟加载模式，那么不管是不是">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java/spring/spring4.2文档学习(三)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/17/java/spring/spring4.2文档学习(三)/" class="article-date">
+  <time datetime="2017-09-17T03:57:00.413Z" itemprop="datePublished">2017-09-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="dependencies-依赖"><a href="#dependencies-依赖" class="headerlink" title="dependencies(依赖)"></a>dependencies(依赖)</h2><h3 id="依赖注入"><a href="#依赖注入" class="headerlink" title="依赖注入"></a>依赖注入</h3><ol>
+<li>基于构造函数的注入方式；</li>
+<li>基于setter方法的注入方式；</li>
+<li>依赖注入时，有依赖关系的bean之间的处理解决过程是怎样的顺序：在容器启动时，会先初始化scope=singleton的bean，如果scope！=singleton将不会在容器启动时加载和初始化bean，而是在第一次被请求时才会初始化一个bean，如果bean被设置为延迟加载模式，那么不管是不是singleton的，都不会再容器启动时加载，而会延迟到第一次请求时；bean之间有依赖关系（也就是说某个bean引用了另一个bean）时，或者拥有depends-on的关系时，被依赖的bean将先被加载，不管被依赖的bean是被设置了延迟加载还是scope！=singleton的；</li>
+</ol>
+<h3 id="依赖注入属性参数"><a href="#依赖注入属性参数" class="headerlink" title="依赖注入属性参数"></a>依赖注入属性参数</h3><ol>
+<li>直接在配置文件中赋值：主要针对原生数据类型、字符串</li>
+<li>引用其他bean：通过\<ref bean="">子元素或者直接通过ref属性值</ref></li>
+<li>内部bean：inner bean一般不必赋予id值，因为只是一个供外部bean使用而已</li>
+<li>集合的配置：List，Map，Properties，Set对应的有\<list>,\<map>\<props>\<set>元素</set></props></map></list></li>
+<li>null或者空字符串值：null有专门的<null>,空字符串直接就是“”</null></li>
+<li>p-namespace的使用：一般我们给属性设置值的时候，是通过\<property>元素来设置的，但如果我们不想通过这种方式，而是直接在bean元素的属性里面给bean的属性设值应该怎么做呢？我们可以在配置文件中引入p的命名空间，通过给bean摄者p:属性名=””这种属性的方式来给bean的属性赋值</property></li>
+<li>c-namespace的使用：跟p-namespace使用方式一样,不过是针对构造注入的一种方式</li>
+<li>组合类属性的设置：通过点号（.）来设置，比如A类包含B类对象b，B类有属性aa，那么在对A实例化时，可以通过b.aa方式给B类的aa属性设置,不过这种方式赋值的前提是A中的b属性不能为空,否则会报空指针错误</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2017/09/17/java/spring/spring4.2文档学习(三)/" data-id="cj7o7n5x80007ewaiffewjndb" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/17/java/spring/spring4.2文档学习(二)/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/17/java/spring/spring4.2文档学习(一)/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Vector/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/TreeMap/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Timer/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/Queue-ArrayDeque/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2017/09/17/java/源码学习/util/LinkedList/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 John Doe<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
